@@ -391,7 +391,7 @@ footer{font-size:.8rem;color:var(--ink2);padding-top:8px;border-top:1px solid va
 
 <main class="wrap">
   <section id="codePanel" class="card codebox" hidden>
-    <div class="card-h"><h3>Build-Code teilen oder laden</h3><small>Der Code enthält alles, was du eingetragen hast.</small></div>
+    <div class="card-h"><h3>Build-Code</h3></div>
     <label class="lbl" for="codeOut">Dein Code</label>
     <textarea id="codeOut" readonly></textarea>
     <div class="rowgap" style="margin-top:8px"><button class="btn pri sm" data-act="copy">Code kopieren</button><span class="msg muted" id="copyMsg"></span></div>
@@ -410,11 +410,6 @@ footer{font-size:.8rem;color:var(--ink2);padding-top:8px;border-top:1px solid va
   </nav>
 
   <section id="view-build" class="view">
-    <ol class="howto">
-      <li>Spielstil, Prestige und Level wählen.</li>
-      <li>Deine Familien und Perks eintragen. Mehr braucht der Algo nicht.</li>
-      <li>Rechts steht dein bestes Build und was du upgraden oder traden solltest.</li>
-    </ol>
     <section class="card setup" id="setup" aria-label="Grunddaten" style="margin-top:14px"></section>
     <section class="card glance" id="glance" aria-label="Auf einen Blick" style="margin-top:14px"></section>
     <div class="grid2" style="margin-top:14px">
@@ -426,9 +421,7 @@ footer{font-size:.8rem;color:var(--ink2);padding-top:8px;border-top:1px solid va
   <section id="view-prestige" class="view" hidden></section>
   <section id="view-datenbank" class="view" hidden></section>
 
-  <footer>
-    Fan-Tool, nicht offiziell. Werte aus Wiki, Patchnotes und Guides (Stand Update 5 vom 31.10.2026). Perk-Werte skalieren linear von +0 bis +10. Einträge mit <span class="unc">≈</span> sind unsicher, weil sich Quellen widersprechen. Dein Build wird nur lokal in diesem Browser gespeichert.
-  </footer>
+  <footer>Fan-Tool · Datenstand Update 5 · <span class="unc">≈</span> = unsicher</footer>
 </main>
 
 <script>
@@ -1116,7 +1109,7 @@ function renderAll(){
   document.querySelectorAll('#tabs a').forEach(a=>{if(a.dataset.tab===v)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   document.querySelectorAll('.view').forEach(s=>{s.hidden=s.id!=='view-'+v;});
   renderNote();
-  if(v==='build'){CUR.an=analyze(CUR.sol);renderSetup();renderGlance();renderInputs();renderResult();const ht=document.querySelector('#view-build .howto');if(ht)ht.hidden=!!(S.inv.length&&S.fams.length);if(UI.scrollRes){UI.scrollRes=false;const r=$('result');if(r&&r.scrollIntoView)r.scrollIntoView({behavior:'smooth',block:'start'});}}
+  if(v==='build'){CUR.an=analyze(CUR.sol);renderSetup();renderGlance();renderInputs();renderResult();if(UI.scrollRes){UI.scrollRes=false;const r=$('result');if(r&&r.scrollIntoView)r.scrollIntoView({behavior:'smooth',block:'start'});}}
   else if(v==='baum')renderTree();
   else if(v==='prestige')renderPrestige();
   else renderDb();
@@ -1124,7 +1117,7 @@ function renderAll(){
   save();
 }
 function renderNote(){
-  $('exampleNote').innerHTML=S.example?`<div class="note"><span><b>Beispiel-Build:</b> 3 Familien und 18 Perks zum Ausprobieren. Ersetze sie durch deine eigenen, dann rechnet alles mit deinen Daten.</span><button class="btn sm" data-act="blank">Leer starten</button></div>`:'';
+  $('exampleNote').innerHTML=S.example?`<div class="note"><span><b>Beispiel-Build</b></span><button class="btn sm" data-act="blank">Leer starten</button></div>`:'';
   $('blankBtn').textContent=UI.confirmBlank?'Wirklich alles leeren?':'Neues Build';
 }
 function renderSetup(){
@@ -1172,26 +1165,22 @@ function renderInputs(){
   const openMore=UI.moreOpen?' open':'';
   $('inputs').innerHTML=`
    <section class="card"><div class="card-h"><div class="stephead"><b>1</b><h2>Deine Familien</h2></div><small>${famTotal()} eingetragen</small></div>
-    <p class="help">Alle Familien, die du besitzt. Der Algo probiert jede aus und nimmt die beste für deinen Spielstil. Hast du eine Familie mehrfach, füg sie einfach nochmal hinzu; die Kopien landen unter Traden.</p>
     <div class="famchips">${fchips}</div>
     <div class="addrow"><select id="addFam" aria-label="Familie wählen">${famOpts}</select><button class="btn pri" data-act="addFam">Hinzufügen</button></div>
     ${S.fams.length?`<details class="dd slotdd" id="slotBox"${UI.slotOpen?' open':''}><summary>Extra-Perk-Slots der Familien (${S.fams.filter(n=>slotTxt(slotsOf(n))).length} mit Extra-Slots)</summary><div class="ddb">
-     <p class="help">Diese Slots kommen von der Familie, zusätzlich zu den Slots aus dem Skill-Baum. Der Algo füllt sie automatisch mit. Bei manchen Familien sind sich die Quellen nicht einig, zum Beispiel bei Fritz. Schau im Spiel nach, wie viele Slots du mit der Familie hast, und stell es hier ein.</p>
      <table class="sltab"><thead><tr><th>Familie</th>${CATS.map(c=>`<th>${CAT[c]}</th>`).join('')}<th></th></tr></thead><tbody>${S.fams.map(n=>{const sl=slotsOf(n),own=!!(S.slots&&S.slots[n]);return `<tr><th scope="row">${esc(n)}${uncM(FAM[n].u&&/Slot/.test(FAM[n].u)?FAM[n].u:'')}</th>${CATS.map(c=>`<td><select data-ch="fslot" data-f="${esc(n)}" data-c="${c}" aria-label="${esc(n)} Extra-${CAT[c]}-Slots">${[0,1,2].map(v=>`<option value="${v}"${(sl[c]||0)===v?' selected':''}>+${v}</option>`).join('')}</select></td>`).join('')}<td>${own?`<button class="btn sm" data-act="slotReset" data-v="${esc(n)}">Standard</button>`:'<small class="muted">Standard</small>'}</td></tr>`;}).join('')}</tbody></table></div></details>`:''}</section>
    <section class="card"><div class="card-h"><div class="stephead"><b>2</b><h2>Deine Perks</h2></div><small>${S.inv.length} Stück · Level +0 bis +10</small></div>
-    <p class="help">Auch Perks, die du gerade nicht nutzt. Doppelte trägst du einfach zweimal ein.</p>
     <div class="addrow"><select id="addPerk" aria-label="Perk wählen">${addOpts}</select><select id="addLvl" aria-label="Level">${lvlOpts}</select><button class="btn pri" data-act="add">Hinzufügen</button></div>
     <ul class="inv">${rows}</ul>
     ${S.inv.length?'<div style="margin-top:10px"><button class="btn sm" data-act="clearInv">Alle Perks entfernen</button></div>':''}</section>
    <section class="card"><div class="card-h"><div class="stephead"><b>3</b><h2>Deine Memories</h2></div><small>${n} Slot${n===1?'':'s'} auf Prestige ${S.prestige}</small></div>${mem}</section>
    <details class="card more" id="gearBox"${UI.gearOpen?' open':''}><summary>ODM-Gear (optional) · Ø Stufe ${gearAvg()}</summary><div class="more-body">
-    <p class="help" style="margin:0">Musst du nicht ausfüllen. Gear upgradest du sowieso, und an den Perk- und Skill-Empfehlungen ändert es kaum etwas. Nützlich sind nur zwei Sachen: Mit der Stufe zeigt dir der Rechner, welches Upgrade als Nächstes dran ist und was es kostet. Und deine Crit-Werte aus dem Spiel machen die Crit-Rechnung genauer, etwa ob du schon nah an 100 % bist.</p>
-    ${(()=>{const any=['cc','cd'].some(k=>S.gear[k].w!==''),eq=S.inv.filter(x=>x.on).length;return any?`<p class="${eq?'help':'warnline'}" style="margin:6px 0">Wichtig: In der Perk-Liste genau die Perks auf „im Spiel an“ stellen, die du beim Ablesen getragen hast. Nur dann kann der Rechner sie wieder herausrechnen.${eq?'':' <button class="btn sm" data-act="equipBest">Ich trage genau das empfohlene Build</button>'}</p>`:'';})()}
+    ${(()=>{const any=['cc','cd'].some(k=>S.gear[k].w!==''),eq=S.inv.filter(x=>x.on).length;return any?`${eq?'':`<p class="warnline" style="margin:6px 0">Markier in der Perk-Liste, was du beim Ablesen getragen hast. <button class="btn sm" data-act="equipBest">Ich trage das empfohlene Build</button></p>`}`:'';})()}
     <table class="geartab"><thead><tr><th>Stat</th><th>Stufe</th><th>Im Spiel</th><th>Grund + Gear</th></tr></thead><tbody>${(()=>{const nx=gearNext();return gearPrio().map(k=>{const x=S.gear[k],dv=CUR.gearD&&CUR.gearD[k],crit=k==='cc'||k==='cd';return `<tr${nx&&nx.k===k?' class="nx"':''}><th scope="row">${gearName(k)}<small>${x.g<15?'nächste: '+nf0.format(GCOST[x.g])+' G':(x.g===15?'A+':'S-')}</small></th><td><select data-ch="gearG" data-k="${k}" aria-label="${gearName(k)} Stufe">${GR.map((g,i)=>`<option value="${i}"${x.g===i?' selected':''}>${g}</option>`).join('')}</select></td><td>${crit?`<input type="number" step="0.1" data-ch="gearW" data-k="${k}" value="${x.w}" placeholder="%" aria-label="${gearName(k)} in Prozent, wie im Spiel angezeigt">`:'<span class="muted">–</span>'}</td><td class="num">${crit&&dv?(dv.bad?`<span class="neg" title="Mit den Perks, die als „im Spiel an“ markiert sind, kommt der Rechner schon über deinen Wert. Markier genau die Perks, die du gerade im Spiel trägst.">passt nicht</span>`:(dv.g==null?'?':`<span title="Grundwert inklusive Gear, aus deinem Wert im Spiel zurückgerechnet (vorher geschätzt: ${nf1.format(+S.base[k])} %)">${nf1.format(dv.eff)} %</span>`)):'–'}</td></tr>`;}).join('');})()}</tbody></table>
     ${gearNext()?`<p class="nextup"><b>Als Nächstes:</b> ${esc(gearNextTxt())}. Bis alles auf A+: ${nf0.format(gearLeft())} Gold.</p>`:'<p class="nextup"><b>Alles auf A+.</b> Die letzte Stufe ist S-; Ø S- schaltet Freedom frei.</p>'}
-    <small class="muted">Reihenfolge für ${esc(ARCH[S.arch].n)}: ${gearPrio().map(gearName).join(' → ')}. Gear wird beim Prestige zurückgesetzt. Für die neue Freedom-Schwierigkeit (Divine-Fragmente) brauchst du Prestige 3 und Ø Stufe S-.</small></div></details>
+    <small class="muted">${gearPrio().map(gearName).join(' → ')}</small></div></details>
    <details class="card more"${openMore} id="moreBox"><summary>Mehr Angaben (optional)</summary><div class="more-body">
-    ${CUR.tree.tap?`<div class="fld"><span class="lbl">Skill-Baum</span><p>${CUR.tree.nodes} Knoten angetippt (${CUR.tree.used} SP). <a href="#baum">Im Skill-Baum antippen, was du hast</a></p></div>`:`<div class="fld"><label class="lbl" for="spIn">Skill-Punkte</label><div class="rowgap"><input id="spIn" type="number" min="0" value="${S.tree.budget}" data-ch="budget"><button class="btn sm" data-act="treeMax">Alle (${CUR.tree.total})</button></div><small>Schaltet Perk-Slots und Baum-Boni frei. Genauer: im Tab Skill-Baum antippen, was du hast.</small></div>`}
+    ${CUR.tree.tap?`<div class="fld"><span class="lbl">Skill-Baum</span><p>${CUR.tree.nodes} Knoten angetippt (${CUR.tree.used} SP). <a href="#baum">Im Skill-Baum antippen, was du hast</a></p></div>`:`<div class="fld"><label class="lbl" for="spIn">Skill-Punkte</label><div class="rowgap"><input id="spIn" type="number" min="0" value="${S.tree.budget}" data-ch="budget"><button class="btn sm" data-act="treeMax">Alle (${CUR.tree.total})</button></div></div>`}
     <div><span class="lbl">Artefakte</span><div class="grid-sel" style="margin-top:6px">${arts}</div></div>
     ${S.prestige?`<div><span class="lbl">Prestige-Talente</span><div class="grid-sel" style="margin-top:6px">${tal}</div></div>`:''}
     <div class="fld"><span class="lbl">Kampflage</span>
@@ -1199,8 +1188,8 @@ function renderInputs(){
      ${S.fams.some(x=>FAM[x].rage)?`<label class="sw"><input type="checkbox" id="rageSw" data-ch="rage" ${S.rage?'checked':''}> Rage Mode aktiv (Ackerman/Shiki)</label>`:''}
      ${S.fams.includes('Helos')?`<div class="rng"><label for="helosR">Undying Hero</label><input type="range" id="helosR" min="0" max="20" value="${S.helos}" data-ch="helos" data-out="helosO"><output id="helosO">${S.helos}</output></div>`:''}
      ${S.mems.slice(0,n).includes('Quakestrike')?`<div class="rng"><label for="quakeR">Quakestrike</label><input type="range" id="quakeR" min="0" max="50" value="${S.quake}" data-ch="quake" data-out="quakeO"><output id="quakeO">${S.quake}</output></div>`:''}</div>
-    <div class="fld"><span class="lbl">Basiswerte ohne Boni</span><small>Zeigt dein Details-Tab eine andere Crit-Chance als hier? Basiswert anpassen, bis es passt.</small>
-     <div class="rowgap"><label class="fld"><span class="lbl">Crit-Chance %</span><input id="bcc" type="number" step="0.5" value="${S.base.cc}" data-ch="base" data-k="cc"></label><label class="fld"><span class="lbl">Crit-Schaden %</span><input id="bcd" type="number" step="5" value="${S.base.cd}" data-ch="base" data-k="cd"></label><label class="fld"><span class="lbl">HP</span><input id="bhp" type="number" step="5" value="${S.base.hp}" data-ch="base" data-k="hp"></label><label class="fld"><span class="lbl">ODM-Speed % (ohne Gear)</span><input id="bspd" type="number" step="5" value="${S.base.spd}" data-ch="base" data-k="spd"></label></div><small>ODM-Speed brauchst du für Black Flash: Er gibt Crit-Schaden pro 1 % Speed. Grundwert ohne Perks und ohne Gear; den Gear-Bonus trägst du oben bei „Dein ODM-Gear“ ein.</small></div>
+    <div class="fld"><span class="lbl">Basiswerte ohne Boni</span>
+     <div class="rowgap"><label class="fld"><span class="lbl">Crit-Chance %</span><input id="bcc" type="number" step="0.5" value="${S.base.cc}" data-ch="base" data-k="cc"></label><label class="fld"><span class="lbl">Crit-Schaden %</span><input id="bcd" type="number" step="5" value="${S.base.cd}" data-ch="base" data-k="cd"></label><label class="fld"><span class="lbl">HP</span><input id="bhp" type="number" step="5" value="${S.base.hp}" data-ch="base" data-k="hp"></label><label class="fld"><span class="lbl">ODM-Speed % (ohne Gear)</span><input id="bspd" type="number" step="5" value="${S.base.spd}" data-ch="base" data-k="spd"></label></div></div>
    </div></details>`;
 }
 
@@ -1224,7 +1213,7 @@ function gearAvg(){const v=GEARK.reduce((a,[k])=>a+S.gear[k].g,0)/GEARK.length;r
 const gearName=k=>GEARK.find(x=>x[0]===k)[1];
 function gearNextTxt(){const nx=gearNext();return nx?`${gearName(nx.k)} ${GR[nx.g]}${nx.g?'':' (noch nicht gelevelt)'} → ${GR[nx.g+1]} für ${nf0.format(nx.cost)} Gold`:'';}
 const TRADE_LINKS=[['AoTR Trading & LFG (Discord, größter Trading-Server)','https://discord.gg/aotrhub'],['Attack on Titan Revolution Community (Discord)','https://discord.gg/attackontitanrevolution'],['game.guide: Trade-Calculator, Werte und Trading Hub','https://www.game.guide/attack-on-titan-revolution-trade-calculator']];
-const tradeLinksHtml=()=>`<div class="tlinks"><b>Wo du Trade-Partner findest</b><ul>${TRADE_LINKS.map(([n,u])=>`<li><a href="${u}" target="_blank" rel="noopener">${esc(n)}</a></li>`).join('')}</ul><small>Fair-Check: Angebot in den game.guide-Calculator eintragen. Sicher bleiben: nur über das Trade-Fenster im Spiel tauschen, nie „zuerst geben“, keine Links oder Logins von Fremden öffnen. Die Server sind Community-Server, nicht vom Entwickler bestätigt.</small></div>`;
+const tradeLinksHtml=()=>`<div class="tlinks"><b title="Nur über das Trade-Fenster im Spiel tauschen, nie zuerst geben, keine Links oder Logins von Fremden.">Trade-Partner finden</b><ul>${TRADE_LINKS.map(([n,u])=>`<li><a href="${u}" target="_blank" rel="noopener">${esc(n)}</a></li>`).join('')}</ul></div>`;
 function renderGlance(){
   const sol=CUR.sol,an=CUR.an,best=sol.best,fn=best.fn,A=ARCH[S.arch],tr=CUR.tree;
   if(!S.inv.length&&!S.fams.length){$('glance').hidden=true;return;}$('glance').hidden=false;
@@ -1235,22 +1224,22 @@ function renderGlance(){
   if(eq.length){const bn=new Set(bestL.map(x=>x.n)),en=new Set(eq.map(x=>x.n));const out=eq.filter(x=>!bn.has(x.n)),inn=bestL.filter(x=>!en.has(x.n));
     const me=evalBuild(CUR.eqFn,eq,sol.ctx),g=pct(best.power-me.power);
     if(!out.length&&!inn.length)row('Ausrüsten','Dein Build im Spiel ist schon das beste.','');
-    else row('Ausrüsten',`${out.map(x=>esc(x.n)).join(', ')||'–'} raus, ${inn.map(x=>esc(x.n)).join(', ')||'–'} rein`,`${g>0?fmtGain(g)+' Build-Score':'gleich gut'}. Deine Perks im Spiel stellst du in der Perk-Liste mit „im Spiel an“ ein.`);
-  }else row('Ausrüsten',bestL.map(x=>esc(x.n)).join(' · ')||'Noch keine Perks',`Bestes Build mit ${esc(fn)}. Trägst du das schon?`,`<button class="lnk" data-act="equipBest">Ja, trage ich →</button>`);
+    else row('Ausrüsten',`${out.map(x=>esc(x.n)).join(', ')||'–'} raus, ${inn.map(x=>esc(x.n)).join(', ')||'–'} rein`,`${g>0?fmtGain(g)+' Build-Score':'gleich gut'}`);
+  }else row('Ausrüsten',bestL.map(x=>esc(x.n)).join(' · ')||'Noch keine Perks','',`<button class="lnk" data-act="equipBest">Ja, trage ich →</button>`);
   // Leveln
   if(an.ups.length){const u=an.ups[0];row('Leveln',`${esc(u.x.n)} +${u.x.l} → +10`,`${fmtGain(u.g10)} Build-Score${an.ups[1]?`, danach ${esc(an.ups[1].x.n)} (${fmtGain(an.ups[1].g10)})`:''}.`,det('up'));}
   else row('Leveln','Alles im Build ist auf +10.','');
   // Verfüttern
-  row('Verfüttern',an.feed.length?an.feed.map(x=>`${esc(x.n)} +${x.l}`).join(', '):'Nichts',an.feed.length?`Bringt deinem Build mit ${esc(fn)} auch auf +10 nichts, also ab damit in deine Upgrades.${an.keepTrade.length?` ${an.keepTrade.map(x=>esc(x.n)).join(', ')} ${an.keepTrade.length>1?'sind':'ist'} zu wertvoll dafür, die lieber traden.`:''}`:(an.keepTrade.length?`Die nutzlosen Perks (${an.keepTrade.map(x=>esc(x.n)).join(', ')}) sind zu wertvoll zum Verfüttern, lieber traden.`:'Alle Perks können noch nützlich werden.'),det('feed'));
+  row('Verfüttern',an.feed.length?an.feed.map(x=>`${esc(x.n)} +${x.l}`).join(', '):'Nichts',an.keepTrade.length?`Lieber traden: ${an.keepTrade.map(x=>esc(x.n)).join(', ')}`:'',det('feed'));
   // Traden
   {const w=an.want[0],fw=an.famWant[0];const give=an.keepTrade[0]||an.giveP.filter(o=>o.c.p.r!=='C')[0];
    row('Traden',w?`${esc(w.p.n)} holen (${fmtGain(w.g10)} auf +10)`:'Kein Perk würde viel bringen',[give?`Dafür abgeben: ${esc(give.n||give.c.n)}`:'',fw&&fw.g>5?`Einzige Familie, die sich lohnt: ${esc(fw.F.n)} (${fmtGain(fw.g)})`:''].filter(Boolean).join(' · ')||'',`<span class="glinks">${det('trade')}<a class="lnk" href="https://discord.gg/aotrhub" target="_blank" rel="noopener">Trading-Discord ↗</a></span>`);}
   // Skill-Baum
   {const ids=tr.plan.map(it=>it.t+':'+it.seg+':'+it.i).filter(id=>!tr.bought.has(id));const nx=ids.slice(0,3).map(id=>nodeById(id).nd.n);
    const aff=tr.tap?ids.filter(id=>tr.afford.has(id)).length:0;
-   row('Skill-Baum',nx.length?nx.map(esc).join(' → '):'Komplett',nx.length?(tr.tap?(aff?`${aff} Knoten kannst du dir mit deinen freien SP jetzt holen.`:'Trag im Skill-Baum deine freien SP ein.'):'Tipp im Skill-Baum an, was du schon hast, dann stimmt das genau.'):'',`<a class="lnk" href="#baum">Skill-Baum →</a>`);}
+   row('Skill-Baum',nx.length?nx.map(esc).join(' → '):'Komplett',nx.length&&tr.tap&&aff?`${aff} davon jetzt kaufbar`:'',`<a class="lnk" href="#baum">Skill-Baum →</a>`);}
   // Gear
-  if(gearNext())row('Gear',esc(gearNextTxt()),'Upgraden lohnt sich immer; das hier ist nur die Reihenfolge.','');
+  if(gearNext())row('Gear',esc(gearNextTxt()),'','');
   $('glance').innerHTML=`<div class="card-h"><h2>Das solltest du jetzt tun</h2><small>${esc(fn)} · ${esc(A.n)}</small></div><ol class="gl">${rows.join('')}</ol>`;
 }
 function itemHtml(gain,cls,title,body){return `<li class="aitem"><span class="gain ${cls||''}">${gain}</span><div><b>${title}</b>${body?`<p>${body}</p>`:''}</div></li>`;}
@@ -1266,22 +1255,20 @@ function renderResult(){
   const alt=sol.results.filter(r=>r.fn!==best.fn).slice(0,2).map(r=>`${esc(r.fn)} ${fmtGain(pct(r.power-best.power))}`).join(', ');
   // Crit-Zeile
   const cap=m.ccRaw>=100;
-  const crit=`<div class="critline ${cap?'cap':''}"><span>Crit-Chance <b>${nf0.format(m.cc)} %</b>${cap?` (Cap erreicht${m.ccRaw>100.5?', '+nf0.format(m.ccRaw-100)+' % verschwendet':''})`:''}</span><span>Crit-Schaden <b>${nf0.format(m.cd)} %</b></span><span title="Crit-Chance × Crit-Schaden: so viel mehr Schaden macht ein Treffer im Schnitt durch Crits">Ø pro Treffer <b>+${nf1.format(m.cc*m.cd/100)} %</b></span>${m.gambler>1?`<span>Gambler <b>×${nf1.format(m.gambler)}</b></span>`:''}${cap?'<span>Weitere Crit-Chance zählt der Algo nicht mehr, deshalb nimmt er lieber Schaden oder Crit-Schaden.</span>':''}</div>`;
+  const crit=`<div class="critline ${cap?'cap':''}"><span>Crit-Chance <b>${nf0.format(m.cc)} %</b>${cap?` (Cap erreicht${m.ccRaw>100.5?', '+nf0.format(m.ccRaw-100)+' % verschwendet':''})`:''}</span><span>Crit-Schaden <b>${nf0.format(m.cd)} %</b></span><span title="Crit-Chance × Crit-Schaden: so viel mehr Schaden macht ein Treffer im Schnitt durch Crits">Ø pro Treffer <b>+${nf1.format(m.cc*m.cd/100)} %</b></span>${m.gambler>1?`<span>Gambler <b>×${nf1.format(m.gambler)}</b></span>`:''}</div>`;
   // Aktionen
   let list='';
   if(UI.act==='up'){
     list+=an.ups.length?an.ups.map(u=>itemHtml(fmtGain(u.g10),'',`${esc(u.x.n)} +${u.x.l} → +10`,`Pro Level ungefähr ${fmtGain(u.g1)} Build-Score.`)).join(''):'<li class="empty">Alle Perks im Build sind auf +10.</li>';
     if(an.promote.length)list+='<li class="asub">Würde mit Upgrades ins Build kommen</li>'+an.promote.map(o=>itemHtml(fmtGain(o.g),'neu',`${esc(o.c.n)} +${o.c.l} → +${o.need}`,`Ab +${o.need} ersetzt er ${o.rep?esc(o.rep.n):'einen leeren Slot'}. Auf +10 bringt er ${fmtGain(o.g)}.`)).join('');
-    {const nx=gearNext();if(nx)list+='<li class="asub">ODM-Gear (Gold)</li>'+itemHtml(GR[nx.g+1],'neu',esc(gearNextTxt()),`Danach weiter in dieser Reihenfolge: ${gearPrio().map(gearName).join(' → ')}. Bis alles auf A+: ${nf0.format(gearLeft())} Gold. Wird beim Prestige zurückgesetzt.`);}
-    list+='<li class="asub">So enhancest du</li><li class="empty">Fodder: doppelte Perks oder Keys (Worn = Common, Wallsteel = Rare, Command = Epic, Lazurite = Legendary). Seit Update 4 kannst du beliebig viele auf einmal reinstecken. Perk-Level bleiben beim Prestige erhalten.</li>';
+    {const nx=gearNext();if(nx)list+='<li class="asub">ODM-Gear (Gold)</li>'+itemHtml(GR[nx.g+1],'neu',esc(gearNextTxt()),`Bis alles auf A+: ${nf0.format(gearLeft())} Gold`);}
   }else if(UI.act==='feed'){
-    list+=`<li class="empty">Hier steht, was deinem Build mit ${esc(best.fn)} auch auf +10 nichts bringt. Das kannst du gefahrlos als Fodder in deine wichtigen Perks stecken.</li>`;
     list+='<li class="asub">Verfüttern</li>'+(an.feed.length?an.feed.map(x=>itemHtml('Fodder','neu',`${esc(x.n)} +${x.l} ${rarChip(x.p.r)}`,esc(x.why))).join(''):'<li class="empty">Nichts. Alle Perks können noch nützlich werden.</li>');
     if(an.keepTrade.length)list+='<li class="asub">Nutzlos, aber zu wertvoll zum Verfüttern</li>'+an.keepTrade.map(x=>itemHtml('traden','',`${esc(x.n)} +${x.l} ${rarChip(x.p.r)}`,`${esc(x.why)} Tauschwert: ${tradeVal('perk',x.p)}. Findest du keinen Abnehmer, kannst du ihn auch verfüttern.`)).join('');
     if(an.alts.length)list+='<li class="asub">Nicht verfüttern</li>'+itemHtml('behalten','neu',an.alts.map(c=>esc(c.n)+' +'+c.l).join(', '),'Auf +10 fast so gut wie dein Build. Falls du sie hochlevelst oder sich deine Werte ändern, kommen sie ins Build.');
     if(an.ups.length)list+=`<li class="empty">Wohin mit dem Fodder? Zuerst in ${esc(an.ups[0].x.n)} (${fmtGain(an.ups[0].g10)} bis +10).</li>`;
   }else if(UI.act==='trade'){
-    const lock=S.prestige<1?'<li class="empty">Seit Update 5 kannst du Perks und Artefakte ab Prestige 1 traden, Serums ab Prestige 2. Dazu brauchst du einen verifizierten Account, der mindestens 90 Tage alt ist.</li>':(S.prestige<3?'<li class="empty">Familien laut Guides erst ab Prestige 3. Trade-Steuer ist seit Update 5 um 20 % gesenkt.</li>':'');
+    const lock=S.prestige<1?'<li class="empty">Traden geht ab Prestige 1.</li>':(S.prestige<3?'<li class="empty">Familien traden geht ab Prestige 3.</li>':'');
     list+=lock+'<li class="asub">Lohnt sich zu holen</li>';
     list+=an.want.length?an.want.map(o=>itemHtml(fmtGain(o.g10),'',`${esc(o.p.n)}${uncM(o.p.u)} <span class="rar" style="--rc:var(--r-${o.p.r})">${RAR[o.p.r]}</span>`,`Auf +0 ${fmtGain(o.g0)}, auf +10 ${fmtGain(o.g10)}. Ersetzt ${o.rep?esc(o.rep.n):'einen leeren Slot'}. Tauschwert: ${tradeVal('perk',o.p)}.`)).join(''):'<li class="empty">Kein Perk würde dein Build deutlich verbessern.</li>';
     if(an.famWant.length)list+=an.famWant.map(o=>itemHtml(fmtGain(o.g),'',`Familie ${esc(o.F.n)} ${tierB(o.F.t)}`,`Mit deinen jetzigen Perks. ${o.F.r==='S'?'Nur über Achievements freischaltbar.':'Tauschwert: '+tradeVal('fam',o.F)+'.'}`)).join('');
@@ -1309,7 +1296,7 @@ function renderResult(){
   const reach=clamp(best.power/Math.max(ideal.power,1e-6)*100,0,100);
   $('result').innerHTML=`<section class="card result">
    <div class="res-top"><span class="lbl">Dein bestes Build</span><h2>${esc(sol.noFam?'Ohne Familie':best.fn)} · ${esc(A.n)}</h2>
-    <div class="scoreline"><div class="big num">${nf0.format(m.score)}<small>Build-Score</small></div>${(()=>{const eq=eqPerks();if(!eq.length)return '';const me=evalBuild(CUR.eqFn,eq,sol.ctx);const g=pct(best.power-me.power);return `<div class="vsgame"><span class="lbl">Dein Build im Spiel</span><b class="num">${nf0.format(me.score)}</b><small>${Math.abs(g)<0.5?'genauso gut wie der Vorschlag':(g>0?'Vorschlag ist '+fmtGain(g)+' besser':'besser als der Vorschlag')}</small></div>`;})()}<small style="max-width:30ch">100 = ohne Boni. Schaden, Überleben, Mobilität und Utility, gewichtet für ${esc(A.n)}.</small></div></div>
+    <div class="scoreline"><div class="big num" title="100 = ohne Boni. Schaden, Überleben, Mobilität und Utility, gewichtet für deinen Spielstil.">${nf0.format(m.score)}<small>Build-Score</small></div>${(()=>{const eq=eqPerks();if(!eq.length)return '';const me=evalBuild(CUR.eqFn,eq,sol.ctx);const g=pct(best.power-me.power);return `<div class="vsgame"><span class="lbl">Dein Build im Spiel</span><b class="num">${nf0.format(me.score)}</b><small>${Math.abs(g)<0.5?'genauso gut wie der Vorschlag':(g>0?'Vorschlag ist '+fmtGain(g)+' besser':'besser als der Vorschlag')}</small></div>`;})()}</div></div>
    <div class="minis">
     <div class="mini"><div class="k">Schaden</div><div class="v num">${nf0.format(m.dmgIdx)}</div></div>
     <div class="mini"><div class="k">Überleben</div><div class="v num">${nf0.format(m.ehp)}</div></div>
@@ -1324,14 +1311,13 @@ function renderResult(){
     <button data-act="tabAct" data-v="trade" aria-pressed="${UI.act==='trade'}">Traden (${an.want.length+an.famWant.length+an.giveP.filter(o=>o.c.p.r!=='C').length+an.dups.length+an.famDups.length})</button>
     <button data-act="tabAct" data-v="todo" aria-pressed="${UI.act==='todo'}">To-do (${an.todo.length})</button></div></div>
    <ul class="alist">${list}</ul>
-   <details class="dd"><summary>Ziel-Build: alle Perks auf +10 (du hast ${nf0.format(reach)} % davon)</summary><div class="ddb"><ul class="loadout" style="padding:0">${idealRows}</ul><small>Mit vollem Skill-Baum. Der Abstand zeigt, wie viel Luft dein Build noch hat.</small></div></details>
+   <details class="dd"><summary>Ziel-Build: alle Perks auf +10 (du hast ${nf0.format(reach)} % davon)</summary><div class="ddb"><ul class="loadout" style="padding:0">${idealRows}</ul></div></details>
    <details class="dd"><summary>Meta-Tipps: Skills, Baum, Artefakte</summary><div class="ddb">
     <div><span class="lbl">Meta-Skill-Leiste</span><div style="margin-top:6px">${hotbarHtml(best.fn)}</div><p style="margin-top:6px"><a href="#baum">Ganzen Skill-Baum und Level-Fahrplan ansehen</a></p></div>
-    ${f.sh&&!S.titan?`<div><span class="lbl">Ohne Titan</span><p>Von ${esc(best.fn)} zählen nur die Werte${f.n==='Fritz'?' (+15 % Crit-Chance und Crit-Schaden, +10 % Schaden, +10 % Raid-Schaden, −10 % Cooldowns, Extra-Slots)':''}. Titan-Stats, Shifter-Skills und Shift-Perks rechnet der Algo mit 0.</p></div>`:''}
-    <div><span class="lbl">Skill-Baum</span><p>${['sup','off','def'].map(t=>`${TREES[t].n} ${paths[t]==='L'?'links':'rechts'} (${TREES[t][paths[t]].n})`).join(' · ')}. ${esc(recWhy(best.fn)||(fx.tree?'':A.treeNote))}</p></div>
+    <div><span class="lbl">Skill-Baum</span><p>${['sup','off','def'].map(t=>`${TREES[t].n} ${paths[t]==='L'?'links':'rechts'} (${TREES[t][paths[t]].n})`).join(' · ')}. ${esc(recWhy(best.fn))}</p></div>
     <div><span class="lbl">Artefakte</span><p>${esc(A.art)}</p></div>
     <div><span class="lbl">Memories für ${esc(A.n)}</span><p>${idealMems(best.fn,7).map(esc).join(', ')} (in dieser Reihenfolge)</p></div>
-    ${fx.note?`<div><span class="lbl">Hinweis</span><p>${esc(fx.note)}</p></div>`:''}</div></details>
+</div></details>
    <details class="dd"><summary>Alle Werte und Rechenweg</summary><div class="ddb">
     <p class="muted">Boni werden addiert, Perk-Werte linear von +0 bis +10 gerechnet. Der Algo probiert jede deiner Familien mit allen Perk-Kombinationen und behält die mit dem höchsten Build-Score. Effekte ohne Zahl (z. B. Orders, Titan-Umrisse) bekommen einen geschätzten Bonus.</p>
     ${statHtml||'<p class="muted">Noch keine Boni.</p>'}
@@ -1393,7 +1379,7 @@ function gtreeHtml(fn){
   const nd=(t,seg,i,n)=>{const id=t+':'+seg+':'+i,b=tr.bought.get(id),pl=tr.planned.get(id),af=tr.afford.has(id);
     const eff=n.s?Object.entries(n.s).map(([k,v])=>STATS[k].n+' '+fmtStat(k,v)).join(', '):n.x;
     return `<li class="nd k-${n.k}${b?' got':''}${af?' aff':''}${barIds.has(id)?' meta':''}"><button type="button" class="ndb" data-act="tap" data-id="${id}" aria-pressed="${!!b}" title="${esc(n.n+': '+eff+' · '+n.sp+' SP')}"><span class="mk" aria-hidden="true"></span><span class="nl"><b>${esc(n.n)}</b><small>${esc(eff)}</small></span><span class="ns">${b?'✓':(af?'jetzt':(pl||''))}<small>${n.sp} SP</small></span></button></li>`;};
-  const fam=TREES.fam?`<section class="gt ftree" aria-label="${esc(TREES.fam.fam)}-Familienbaum"><h3>${esc(TREES.fam.fam)}-Familienbaum</h3><ol class="trunk">${nd('fam','base',0,TREES.fam.base[0])}</ol><ol class="trunk fbr">${TREES.fam.base.slice(1).map((n,j)=>nd('fam','base',j+1,n)).join('')}</ol><p class="help" style="margin:6px 4px 0">Founder's Vengeance ist die Wurzel, alles andere hängt direkt dran.</p></section>`:'';
+  const fam=TREES.fam?`<section class="gt ftree" aria-label="${esc(TREES.fam.fam)}-Familienbaum"><h3>${esc(TREES.fam.fam)}-Familienbaum</h3><ol class="trunk">${nd('fam','base',0,TREES.fam.base[0])}</ol><ol class="trunk fbr">${TREES.fam.base.slice(1).map((n,j)=>nd('fam','base',j+1,n)).join('')}</ol></section>`:'';
   return fam+['sup','off','def'].map(t=>{const T=TREES[t];
     const branch=sg=>{const on=paths[t]===sg;return `<div class="branch ${on?'on':'off'}"><div class="bh"><b>${sg==='L'?'Links':'Rechts'} · ${T[sg].n}</b>${rec[t]===sg?'<span class="chip ok">Meta</span>':''}${on?'':`<button class="btn sm" data-act="path" data-t="${t}" data-v="${sg}">Wählen</button>`}</div><ol class="trunk">${T[sg].nodes.map((n,i)=>nd(t,sg,i,n)).join('')}</ol></div>`;};
     return `<section class="gt" aria-label="${T.n}-Baum"><h3>${T.n}</h3><ol class="trunk">${T.base.map((n,i)=>nd(t,'base',i,n)).join('')}</ol><div class="fork">${branch('L')}${branch('R')}</div></section>`;}).join('');
@@ -1419,7 +1405,7 @@ function renderTree(){
     return `<li class="rd ${r.done?'done':r.part?'part':''}"><span class="rdn">${r.done?'✓':''} ${tr.tap&&r.done?'':(r.from===r.to?r.from:r.from+'–'+r.to)}</span><div><b>${esc(r.title)}</b><p>${[r.slot?(r.slot>1?r.slot+' Perk-Slots':'Perk-Slot'):'',r.cap?'Capstone (Divine-Perks + legendäre Memories)':'',sk?'Skills: '+esc(sk):'',stt].filter(Boolean).join(' · ')}</p></div><span class="rdsp">${r.sp} SP<br><small>${r.done?'gekauft':(tr.tap?'noch '+r.cumEnd:'bis '+r.cumEnd)}</small></span></li>`;}).join('');
   const nxt=tr.plan.map(it=>it.t+':'+it.seg+':'+it.i).filter(id=>tr.afford.has(id)).map(id=>nodeById(id).nd.n);
   $('view-baum').innerHTML=`
-  <section class="card"><div class="tree-top"><div><h2>Skill-Baum</h2><p class="help" style="margin:4px 0 0;max-width:64ch">Für ${esc(fn)} · ${esc(A.n)}. ${tr.tap?'Tipp unten im Baum an, was du im Spiel schon hast. Davor liegende Knoten werden automatisch mit markiert, ein zweites Antippen nimmt den Knoten und alles danach wieder raus.':'Trag deine Skill-Punkte ein oder tipp unten im Baum an, was du hast.'} Jeder Knoten kostet 1.850 Gold, ein Reset 1.999 Gems.</p></div>
+  <section class="card"><div class="tree-top"><div><h2>Skill-Baum</h2><small class="muted">${esc(fn)} · ${esc(A.n)}</small></div>
     <div class="rowgap"><div class="seg" role="group" aria-label="Eingabe"><button data-act="treeMode" data-v="tap" aria-pressed="${tr.tap}">Antippen</button><button data-act="treeMode" data-v="sp" aria-pressed="${!tr.tap}">Nur SP-Zahl</button></div>
      ${tr.tap?`<label class="fld"><span class="lbl">Freie SP im Spiel</span><input id="treeFree" type="number" min="0" value="${S.tree.free}" data-ch="free"></label>${tr.nodes?'<button class="btn sm" data-act="tapClear">Alles abwählen</button>':''}`:`<label class="fld"><span class="lbl">Skill-Punkte</span><input id="treeBudget" type="number" min="0" value="${S.tree.budget}" data-ch="budget"></label><button class="btn sm" data-act="treeMax">Alle (${tr.total} SP)</button>`}${offFree.length?`<button class="btn sm pri" data-act="treeRec">Meta-Pfade wählen</button>`:''}</div></div>
    <div class="meter"><i style="width:${tr.total?tr.used/tr.total*100:0}%"></i></div>
@@ -1427,18 +1413,15 @@ function renderTree(){
    <div class="kv"><span>${tr.tap?'Gekauft':'Ausgegeben'} <b>${tr.used}${tr.tap?'':' / '+tr.budget} SP</b></span><span>Knoten <b>${tr.nodes}</b></span><span>Gold <b>${nf0.format(tr.nodes*1850)}</b></span><span>Perk-Slots <b>${['off','def','sup'].filter(t=>tr.slot[t]).map(t=>CAT[t]).join(', ')||'keine'}</b></span></div>
    ${recWhy(fn)?`<p class="help" style="margin-top:8px">${esc(recWhy(fn))}</p>`:''}
    ${offFree.length?`<p class="help" style="margin-top:8px">In ${offFree.map(t=>TREES[t].n).join(', ')} ist noch nicht der Meta-Pfad gewählt.</p>`:''}
-   ${offLock.length?`<p class="help" style="margin-top:8px">${offLock.map(t=>`In ${TREES[t].n} hast du den ${TREES[t][S.tree.paths[t]].n}-Pfad, Meta wäre ${TREES[t][rec[t]].n}`).join('. ')}. Umskillen kostet 1.999 Gems, lohnt sich aber meist erst, wenn der Pfad dir wirklich fehlt.</p>`:''}</section>
-  <section class="card"><div class="card-h"><h2>Meta-Skill-Leiste</h2><small>Tasten 1–5 wie im Spiel</small></div>${hotbarHtml(fn)}
-   <ul class="sklist">${barFor(fn).map(sk=>{const s2=skillStatus(sk);return `<li><b>${esc(sk)}</b> <span class="muted">${esc(s2.src)}${SKCD[sk]?' · '+SKCD[sk]+' s Cooldown':''}</span>${s2.x?`<br><span>${esc(s2.x)}</span>`:'<br><span class="muted">Effekt im Spiel nachlesen.</span>'}</li>`;}).join('')}</ul>
-   ${(FAMX[fn]&&FAMX[fn][S.arch]&&FAMX[fn][S.arch].note)?`<p class="help" style="margin-top:10px">${esc(FAMX[fn][S.arch].note)}</p>`:''}</section>
+   ${offLock.length?`<p class="help" style="margin-top:8px">${offLock.map(t=>`In ${TREES[t].n} hast du den ${TREES[t][S.tree.paths[t]].n}-Pfad, Meta wäre ${TREES[t][rec[t]].n}`).join('. ')}. Umskillen: 1.999 Gems.</p>`:''}</section>
+  <section class="card"><div class="card-h"><h2>Meta-Skill-Leiste</h2></div>${hotbarHtml(fn)}
+</section>
   <div class="two">
    <section class="card"><div class="card-h"><h2>Was du zuerst levelst</h2></div><ul class="alist" style="padding:0">${prio.join('')}</ul></section>
-   <section class="card"><div class="card-h"><h2>Fahrplan</h2><small>Schritte · SP · Summe</small></div><ol class="road">${road}</ol><p class="help" style="margin-top:8px">★ = Skill auf deiner Meta-Leiste. Grün = schon gekauft.</p></section>
+   <section class="card"><div class="card-h"><h2>Fahrplan</h2></div><ol class="road">${road}</ol></section>
   </div>
   <section class="card"><div class="card-h"><h2>Baum wie im Spiel</h2><span class="legend"><span><i class="mk k-stat"></i>Stat</span><span><i class="mk k-skill"></i>Skill</span><span><i class="mk k-slot"></i>Perk-Slot</span><span><i class="mk k-cap"></i>Capstone</span><span><i class="mk got"></i>gekauft</span><span><i class="mk meta"></i>Meta-Skill</span></span></div>
-   <p class="help">Oben der Stamm, danach gabelt sich jeder Baum in zwei Pfade, von denen du nur einen nehmen kannst. <b>Antippen = hast du.</b> ✓ heißt gekauft, „jetzt“ kannst du dir mit deinen freien SP leisten, die Zahl ist die Reihenfolge danach.</p>
-   <div class="gtree${TREES.fam?' hasfam':''}">${gtreeHtml(fn)}</div>
-   <p class="help" style="margin-top:10px">Knotenwerte aus dem Item-Level-Guide. Capstones (20 SP) laut Update-5-Patchnotes; Stat-Knoten aus dem Item-Level-Guide.</p></section>`;
+   <div class="gtree${TREES.fam?' hasfam':''}">${gtreeHtml(fn)}</div></section>`;
 }
 
 /* ---------- Prestige ---------- */
@@ -1451,18 +1434,17 @@ function renderPrestige(){
      <div class="rowgap"><label class="fld"><span class="lbl">EXP bisher</span><input id="xpNow" type="number" min="0" step="1000" value="${S.xpNow}" data-ch="xpNow" style="width:9em"></label>
      <label class="fld"><span class="lbl">EXP pro Stunde</span><input id="xph" type="number" min="0" step="1000" value="${S.xph}" data-ch="xph" style="width:9em"></label></div>
      <div class="meter"><i style="width:${pc}%"></i></div>
-     <div class="kv"><span>Noch <b>${nf0.format(left)} EXP</b></span><span>Zeit <b>${S.xph>0?nf1.format(h)+' h':'–'}</b></span><span>Fortschritt <b>${nf0.format(pc)} %</b></span></div>
-     <p class="help" style="margin-top:8px">Deinen EXP-Stand siehst du im Prestige-Menü (Equipment → Prestige). Raids auf hoher Stufe, Waves, EXP-Tränke und der stündliche Map-Boost (+25 % EXP) gehen am schnellsten.</p></section>`;}
+     <div class="kv"><span>Noch <b>${nf0.format(left)} EXP</b></span><span>Zeit <b>${S.xph>0?nf1.format(h)+' h':'–'}</b></span><span>Fortschritt <b>${nf0.format(pc)} %</b></span></div></section>`;}
   else calc='<section class="card"><h2>Maximales Prestige erreicht</h2><p class="help" style="margin-top:6px">Captain (★5): 7 Memory-Slots, Level-Cap 225. Jetzt zählen nur noch Perk-Level, Memories und Artefakt-Substats.</p></section>';
   const tal=S.talents.slice(0,p).filter(Boolean),cntT=k=>tal.filter(x=>x===k).length;
   $('view-prestige').innerHTML=`<div class="two">
    <div class="col"><section class="card"><div class="card-h"><h2>Prestige-Stufen</h2><small>du: ★${p}</small></div>
     <div class="tblwrap"><table><thead><tr><th>Rang</th><th class="num">Level nötig</th><th class="num">EXP</th><th class="num">Level-Cap</th><th class="num">Memory-Slots</th><th class="num">Gold → Gem</th></tr></thead><tbody>${rows}</tbody></table></div>
-    <p class="help" style="margin-top:8px">Jedes Prestige: Talent wählen, +1 Memory-Slot (★3 und ★5 je +1 extra), mehr Gems aus der AFK-Zone, +0,005 % Chance auf Legendary-Familien. Colossal-Raid ab ★2, Mythic-Perks im Waves-Market ab ★1. Traden laut Guides: Perks und Artefakte ab ★2, Familien ab ★3.</p></section>${calc}</div>
+    </section>${calc}</div>
    <div class="col"><section class="card"><div class="card-h"><h2>Talent-Wahl</h2></div>
     <p>Empfehlung jetzt: <b>${esc(ta.n)}</b>.</p>
     <div class="kv" style="margin-top:8px"><span>Luck <b>${sgn(cntT('luck')*7.5)} %</b></span><span>EXP <b>${sgn(cntT('xp')*15)} %</b></span><span>Gold <b>${sgn(cntT('gold')*15)} %</b></span></div>
-    <p class="help" style="margin-top:8px">Gold lohnt selten, weil ODM-Upgrades beim Prestige zurückgesetzt werden. Die Wahl ist dauerhaft.</p></section>
+    </section>
    <section class="card"><div class="card-h"><h2>Vor dem Prestige</h2></div><ul class="check">
      <li>Ein Serum besorgen, damit du nach dem Reset direkt Raids spielen kannst.</li>
      <li>Gold-Belohnungen aus dem Battlepass erst nach dem Prestige abholen.</li>
@@ -1483,7 +1465,7 @@ function renderDb(){
     ${cats?`<div class="seg" role="group" aria-label="Kategorie">${cats.map(([k,n])=>`<button data-act="dbc" data-v="${k}" aria-pressed="${UI.dbCat===k}">${n}</button>`).join('')}</div>`:''}</div>
    <ul class="dbl" id="dbList"></ul></section>
    <section class="card"><div class="card-h"><h2>Quellen &amp; Datenstand</h2></div>
-    <p class="help" style="max-width:70ch">Die Seite kann das Wiki nicht live abrufen, deshalb sind die Daten eingebaut (Stand Update 5 vom 31.10.2026). Wo sich Quellen widersprechen, steht ein <span class="unc">≈</span>; im Zweifel zählt der Tooltip im Spiel.</p>
+    
     <ul class="src">${SOURCES.map(s=>`<li><a href="${s[1]}" target="_blank" rel="noopener">${esc(s[0])}</a></li>`).join('')}</ul></section>`;
   renderDbList();
 }
