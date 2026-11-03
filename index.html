@@ -193,6 +193,11 @@ tr.cur td{background:var(--accent-soft)}
 .slot.lock{background:transparent;border-style:dashed;color:var(--ink3);justify-content:center}
 .slot.lock .s-n{font-weight:600;font-size:.88rem;color:var(--ink2)}
 .pips{display:flex;gap:3px}
+.s-lv{display:flex;align-items:center;gap:4px}
+.s-lv .lvlp{flex:1 1 auto;display:flex;gap:2px}
+.s-lv .lvlp button{flex:1 1 0;width:auto;min-width:0;height:12px}
+.s-lv .x{width:24px;height:24px;font-size:.95rem;border:1px solid var(--line2);background:var(--raise)}
+.s-lv .x:disabled{opacity:.35;cursor:default}
 .pips i{flex:1 1 0;height:4px;border-radius:2px;background:var(--line2)}
 .pips i.on{background:var(--rc,var(--accent))}
 .vs{display:inline-flex;align-items:baseline;gap:6px;padding:3px 10px;border-radius:999px;background:var(--sunk);font-size:.8rem}
@@ -1211,9 +1216,11 @@ function ringHtml(score,reach){
   const r=52,C=2*Math.PI*r,off=C*(1-clamp(reach,0,100)/100),t=nf0.format(score),fs=t.length>5?24:t.length>4?28:32;
   return `<figure class="ring" title="100 = ohne Boni. Schaden, Überleben, Mobilität und Utility, gewichtet für deinen Spielstil."><svg viewBox="0 0 128 128" role="img" aria-label="Build-Score ${t}, ${nf0.format(reach)} % vom Ziel-Build"><circle class="r-t" cx="64" cy="64" r="${r}"/><circle class="r-p" cx="64" cy="64" r="${r}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 64 64)"/><text x="64" y="${66}" class="r-n" text-anchor="middle" style="font-size:${fs}px">${t}</text><text x="64" y="84" class="r-s" text-anchor="middle">BUILD-SCORE</text></svg><figcaption>${nf0.format(reach)} % vom Ziel-Build</figcaption></figure>`;
 }
+const invIdx=n=>{let j=-1;S.inv.forEach((y,i)=>{if(y.n===n&&(j<0||y.l>S.inv[j].l))j=i;});return j;};
+const lvlCtl=(i,l,name)=>i<0?pips(l):`<div class="s-lv"><button class="x" data-act="lvl" data-i="${i}" data-d="-1" aria-label="${esc(name)} Level senken"${l<=0?' disabled':''}>−</button><div class="lvlp" role="group" aria-label="${esc(name)} Level">${Array.from({length:10},(_,k)=>`<button data-act="setlvl" data-i="${i}" data-v="${k+1}" class="${k<l?'on':''}" aria-label="Level ${k+1}"></button>`).join('')}</div><button class="x" data-act="lvl" data-i="${i}" data-d="1" aria-label="${esc(name)} Level erhöhen"${l>=10?' disabled':''}>+</button></div>`;
 function slotTile(c,x,fam){
   if(!x)return `<div class="slot lock"><div class="s-h">${ICON[c]}<span>${CAT[c]}${fam?' · Familie':''}</span></div><div class="s-n">leer</div></div>`;
-  return `<div class="slot" style="--rc:var(--r-${x.p.r})" title="${esc(x.p.x)}"><div class="s-h">${ICON[c]}<span>${CAT[c]}${fam?' · Familie':''}</span></div><div class="s-n">${esc(x.n)}${uncM(x.p.u)}</div><div class="s-r"><i class="gem"></i>${RAR[x.p.r]}<b class="num">+${x.l}</b></div>${pips(x.l)}<div class="s-e">${esc(perkSummary(x.p,x.l))}</div></div>`;
+  return `<div class="slot" style="--rc:var(--r-${x.p.r})" title="${esc(x.p.x)}"><div class="s-h">${ICON[c]}<span>${CAT[c]}${fam?' · Familie':''}</span></div><div class="s-n">${esc(x.n)}${uncM(x.p.u)}</div><div class="s-r"><i class="gem"></i>${RAR[x.p.r]}<b class="num">+${x.l}</b></div>${lvlCtl(invIdx(x.n),x.l,x.n)}<div class="s-e">${esc(perkSummary(x.p,x.l))}</div></div>`;
 }
 const lockTile=(c,txt,fam)=>`<div class="slot lock"><div class="s-h">${ICON[c]}<span>${CAT[c]}${fam?' · Familie':''}</span></div><div class="s-n">gesperrt</div><div class="s-e">${txt}</div></div>`;
 function renderResult(){
@@ -1255,7 +1262,7 @@ function renderResult(){
   // Aktionen
   let list='';
   if(UI.act==='up'){
-    list+=an.ups.length?an.ups.map(u=>itemHtml(fmtGain(u.g10),'',`${esc(u.x.n)} +${u.x.l} → +10`,`pro Level ${fmtGain(u.g1)}`)).join(''):'<li class="empty">Alle Perks im Build sind auf +10.</li>';
+    list+=an.ups.length?an.ups.map(u=>{const i=invIdx(u.x.n);return itemHtml(fmtGain(u.g10),'',`${esc(u.x.n)} +${u.x.l} → +10${i>=0?` <button class="btn sm" data-act="lvl" data-i="${i}" data-d="1" style="margin-left:6px">+1</button>`:''}`,`pro Level ${fmtGain(u.g1)}`);}).join(''):'<li class="empty">Alle Perks im Build sind auf +10.</li>';
     if(an.promote.length)list+='<li class="asub">Kommt mit Upgrades ins Build</li>'+an.promote.map(o=>itemHtml(fmtGain(o.g),'neu',`${esc(o.c.n)} +${o.c.l} → +${o.need}`,`ersetzt dann ${o.rep?esc(o.rep.n):'einen leeren Slot'}`)).join('');
     {const nx=gearNext();if(nx)list+='<li class="asub">ODM-Gear</li>'+itemHtml(GR[nx.g+1],'neu',esc(gearNextTxt()),`bis alles auf A+: ${nf0.format(gearLeft())} Gold`);}
   }else if(UI.act==='feed'){
