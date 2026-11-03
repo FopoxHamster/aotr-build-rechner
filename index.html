@@ -1273,13 +1273,13 @@ function renderResult(){
   }else if(UI.act==='trade'){
     const lock=S.prestige<1?'<li class="empty">Traden geht ab Prestige 1.</li>':(S.prestige<3?'<li class="empty">Familien traden geht ab Prestige 3.</li>':'');
     list+=lock+'<li class="asub">Holen</li>';
-    list+=an.want.length?an.want.map(o=>itemHtml(fmtGain(o.g10),'',`${esc(o.p.n)}${uncM(o.p.u)} ${rarChip(o.p.r)}`,`+0: ${fmtGain(o.g0)} · ersetzt ${o.rep?esc(o.rep.n):'leeren Slot'} · Tauschwert ${tradeVal('perk',o.p)}`)).join(''):'<li class="empty">Kein Perk würde dein Build deutlich verbessern.</li>';
+    list+=an.want.length?an.want.map(o=>itemHtml(fmtGain(o.g10),'',`${esc(o.p.n)}${uncM(o.p.u)} ${rarChip(o.p.r)}`,`Build-Score auf +10 ${fmtGain(o.g10)}, auf +0 ${fmtGain(o.g0)} · ersetzt ${o.rep?esc(o.rep.n):'leeren Slot'} · Tauschwert ${tradeVal('perk',o.p)}`)).join(''):'<li class="empty">Kein Perk würde dein Build deutlich verbessern.</li>';
     if(an.famWant.length)list+=itemHtml(fmtGain(an.famWant[0].g),'',`Familie ${esc(an.famWant[0].F.n)} ${tierB(an.famWant[0].F.t)}`,an.famWant[0].F.r==='S'?'nur über Achievements':'Tauschwert '+tradeVal('fam',an.famWant[0].F));
     list+='<li class="asub">Abgeben</li>';
     const give=an.giveP.filter(o=>o.c.p.r!=='C');
-    list+=give.map(o=>itemHtml(isFinite(o.loss)?fmtGain(o.loss):'0 %','bad',`${esc(o.c.n)} +${o.c.l} ${rarChip(o.c.p.r)}`,`${esc(o.why)} Tauschwert: ${tradeVal('perk',o.c.p)}.`)).join('');
+    list+=give.map(o=>itemHtml(isFinite(o.loss)?fmtGain(o.loss):'0 %','bad',`${esc(o.c.n)} +${o.c.l} ${rarChip(o.c.p.r)}`,`${isFinite(o.loss)?`Selbst auf +10 im besten Slot: ${fmtGain(o.loss)} Build-Score. `:''}${esc(o.why)} Tauschwert: ${tradeVal('perk',o.c.p)}.`)).join('');
     list+=an.famDups.map(o=>itemHtml('Kopie','neu',`Familie ${esc(o.F.n)} ×${o.n}`,`${o.n-1} ${o.n-1===1?'Kopie':'Kopien'} frei · Tauschwert ${tradeVal('fam',o.F)} pro Stück`)).join('');
-    list+=an.giveF.filter(o=>o.g<=0).map(o=>itemHtml(fmtGain(o.g),o.g<-0.5?'bad':'neu',`Familie ${esc(o.F.n)}${famCnt(o.F.n)>1?' ×'+famCnt(o.F.n):''} ${tierB(o.F.t)}`,`${o.other.length?'brauchst du nur für '+o.other.join(' oder ')+' · ':''}Tauschwert ${tradeVal('fam',o.F)}`)).join('');
+    list+=an.giveF.filter(o=>o.g<=0).map(o=>itemHtml(fmtGain(o.g),o.g<-0.5?'bad':'neu',`Familie ${esc(o.F.n)}${famCnt(o.F.n)>1?' ×'+famCnt(o.F.n):''} ${tierB(o.F.t)}`,`Statt ${esc(best.fn)}: ${fmtGain(o.g)} Build-Score${o.other.length?' · brauchst du nur für '+o.other.join(' oder '):''} · Tauschwert ${tradeVal('fam',o.F)}`)).join('');
     if(!give.length&&!an.famDups.length&&!an.giveF.some(o=>o.g<=0))list+='<li class="empty">Nichts Überflüssiges.</li>';
     list+='<li class="tlwrap">'+tradeLinksHtml()+'</li>';
   }else{
