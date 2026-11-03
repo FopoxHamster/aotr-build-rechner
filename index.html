@@ -1,0 +1,1590 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Build- und Stat-Rechner für Attack on Titan Revolution (Roblox): bestes Loadout aus deinen Perks, Upgrades, Trades und Skill-Baum.">
+<meta name="theme-color" content="#18181B">
+<title>AoTR Build-Rechner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: Kopfband in Corps-Grün, darunter 3-Schritte-Leiste und Setup.
+   Hauptansicht: links „Was du hast“ (Eingaben), rechts „Dein bestes Build“ (Ergebnis, sticky). */
+:root{
+  --paper:#ECECEE; --panel:#F8F8F9; --sunk:#E2E2E5; --ink:#1C1C1F; --ink2:#5A5A63; --line:#CDCDD3;
+  --accent:#3F3F46; --accent-soft:#DDDDE1; --on-accent:#F5F5F6;
+  --brass:#8A5F14; --brass-soft:#EFE0C1;
+  --good:#2B7546; --good-soft:#D6EBDC; --warn:#9C560F; --bad:#A3362B; --bad-soft:#F3DAD5;
+  --band:#27272A; --band-ink:#F2F2F3; --band-ink2:#B4B4BB;
+  --r-C:#6F766A; --r-R:#2C68A8; --r-E:#7543AD; --r-L:#9F6D0C; --r-M:#BB3527; --r-S:#0B7F7F; --r-D:#A23B86;
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"Barlow","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#121214; --panel:#1B1B1E; --sunk:#151517; --ink:#E6E6E9; --ink2:#A0A0A8; --line:#2E2E33;
+    --accent:#C9C9CF; --accent-soft:#2A2A2F; --on-accent:#141416;
+    --brass:#D6A64B; --brass-soft:#352A14;
+    --good:#6CC08C; --good-soft:#1B3324; --warn:#E3A04E; --bad:#F07A6B; --bad-soft:#3A1E1A;
+    --band:#18181B; --band-ink:#E8E8EA; --band-ink2:#9A9AA2;
+    --r-C:#9AA195; --r-R:#6BA7E8; --r-E:#B88DEB; --r-L:#E0B04C; --r-M:#F06E5E; --r-S:#3FC7C4; --r-D:#F08AD0;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#121214; --panel:#1B1B1E; --sunk:#151517; --ink:#E6E6E9; --ink2:#A0A0A8; --line:#2E2E33;
+  --accent:#C9C9CF; --accent-soft:#2A2A2F; --on-accent:#141416;
+  --brass:#D6A64B; --brass-soft:#352A14;
+  --good:#6CC08C; --good-soft:#1B3324; --warn:#E3A04E; --bad:#F07A6B; --bad-soft:#3A1E1A;
+  --band:#18181B; --band-ink:#E8E8EA; --band-ink2:#9A9AA2;
+  --r-C:#9AA195; --r-R:#6BA7E8; --r-E:#B88DEB; --r-L:#E0B04C; --r-M:#F06E5E; --r-S:#3FC7C4; --r-D:#F08AD0;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--band)}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:.01em}
+h2{font-size:1.4rem;text-transform:uppercase;font-weight:800}
+h3{font-size:1.05rem;text-transform:uppercase;font-weight:700;letter-spacing:.03em}
+p{margin:0}
+small,.muted{color:var(--ink2)}
+.num,output{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+
+.band{background-color:var(--band);background-image:repeating-linear-gradient(135deg,transparent 0 16px,rgba(255,255,255,.035) 16px 17px);color:var(--band-ink)}
+.band-in{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between;padding-block:20px 16px}
+.eyebrow{margin:0 0 4px;font-size:.76rem;text-transform:uppercase;letter-spacing:.14em;color:var(--band-ink2);font-weight:600}
+.band h1{font-size:clamp(2.1rem,6vw,3.4rem);line-height:.92;font-weight:800;text-transform:uppercase}
+.band h1 span{color:var(--band-ink2)}
+.band-act{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);border-radius:5px;padding:7px 12px;cursor:pointer;font-weight:600;font-size:.9rem}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn.ghost{background:transparent;color:var(--band-ink);border-color:rgba(255,255,255,.28)}
+.btn.ghost:hover{border-color:var(--band-ink)}
+.btn.sm{padding:4px 9px;font-size:.82rem}
+
+main{padding-block:16px 48px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px}
+.card-h{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.help{font-size:.86rem;color:var(--ink2);margin-bottom:10px}
+.note{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border:1px dashed var(--brass);background:var(--brass-soft);border-radius:6px;padding:10px 14px;font-size:.92rem}
+
+/* So geht's */
+.howto{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;list-style:none;margin:0;padding:0;counter-reset:h}
+.howto li{counter-increment:h;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;font-size:.9rem;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+.howto li::before{content:counter(h);font-family:var(--f-display);font-weight:800;font-size:1.6rem;line-height:1;color:var(--accent)}
+@media (max-width:720px){.howto{grid-template-columns:minmax(0,1fr)}}
+
+/* Setup */
+.setup{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end}
+.fld{display:flex;flex-direction:column;gap:5px;min-width:0}
+.lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);font-weight:600}
+select,input[type=number],input[type=search],textarea{background:var(--paper);border:1px solid var(--line);border-radius:5px;padding:7px 9px;min-width:0;max-width:100%}
+input[type=number]{width:6.5em}
+.seg{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:5px;overflow:hidden;background:var(--paper)}
+.seg button{border:0;background:transparent;padding:7px 11px;cursor:pointer;font-weight:600;font-size:.88rem;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button.dim{opacity:.6}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.stars{color:var(--brass);letter-spacing:.05em}
+.jump{display:none;font-size:.88rem;font-weight:600}
+@media (max-width:980px){.jump{display:inline}}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:2px solid var(--line)}
+.tabs a{font-family:var(--f-display);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:1.05rem;text-decoration:none;color:var(--ink2);padding:8px 14px;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+.tabs a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs a:hover{color:var(--ink)}
+
+/* Grids */
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px;align-items:start}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sticky{position:sticky;top:calc(env(safe-area-inset-top,0px) + 10px);max-height:calc(100vh - 20px);overflow:auto;overscroll-behavior:contain}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:980px){.grid2,.two{grid-template-columns:minmax(0,1fr)}.sticky{position:static;max-height:none;overflow:visible}}
+.stephead{display:flex;gap:10px;align-items:baseline}
+.stephead b{font-family:var(--f-display);font-weight:800;font-size:1.7rem;line-height:1;color:var(--accent)}
+
+/* Chips */
+.rar{display:inline-block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--rc);border:1px solid var(--rc);border-radius:3px;padding:0 5px;line-height:1.5;white-space:nowrap}
+.dot{width:10px;height:10px;transform:rotate(45deg);background:var(--rc);flex:none;border-radius:1px}
+.tier{display:inline-grid;place-items:center;min-width:2.1em;font-family:var(--f-display);font-weight:800;font-size:.85rem;border-radius:3px;padding:0 4px;background:var(--sunk);color:var(--ink2);line-height:1.5}
+.tier.t-SS{background:var(--brass);color:var(--panel)}
+.tier.t-S{background:var(--accent);color:var(--on-accent)}
+.tier.t-A{background:var(--accent-soft);color:var(--accent)}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:.78rem;border:1px solid var(--line);border-radius:999px;padding:1px 8px;background:var(--paper);white-space:nowrap}
+.chip.ok{border-color:var(--good);color:var(--good)}
+.chip.miss{border-color:var(--bad);color:var(--bad)}
+.unc{color:var(--warn);font-weight:700;cursor:help}
+
+/* Familien */
+.famchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.fchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--paper);border-radius:5px;padding:4px 4px 4px 9px;font-weight:600;font-size:.9rem}
+.fchip.best{border-color:var(--accent);background:var(--accent-soft)}
+.fchip .fcnt{font-family:var(--f-mono);font-size:.8rem;color:var(--accent)}
+.fchip .fsl{font-weight:600;font-size:.7rem;color:var(--brass);white-space:nowrap}
+.slotdd{margin-top:10px}
+.geartab{width:100%;border-collapse:collapse;font-size:.85rem;margin:6px 0 4px}
+.geartab th,.geartab td{padding:4px;text-align:left;border-bottom:1px solid var(--line)}
+.geartab thead th{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2)}
+.geartab tbody th{font-weight:600}
+.geartab select{width:100%;max-width:5em;padding:4px}
+.geartab input{width:100%;max-width:5.5em;padding:4px}
+.geartab td.num{font-family:var(--f-mono);font-size:.78rem;color:var(--ink2);white-space:nowrap}
+.geartab tr.nx th,.geartab tr.nx td.num{color:var(--accent)}
+.geartab tbody th small{display:block;font-weight:400;font-size:.68rem;color:var(--ink2);font-family:var(--f-mono)}
+.geartab .neg{color:var(--bad)}
+.warnline{margin:6px 0;padding:8px 10px;border-radius:6px;background:var(--bad-soft);font-size:.85rem}
+.warnline .btn{margin-top:6px}
+.tag.eq{border:1px solid var(--line);background:var(--paper);color:var(--ink2);cursor:pointer;font:inherit;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:1px 5px}
+.tag.eq[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.vsgame{display:flex;flex-direction:column;gap:2px;padding-left:14px;border-left:1px solid var(--line)}
+.vsgame b{font-size:1.4rem;font-family:var(--f-display)}
+
+.sltab{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:8px}
+.sltab th,.sltab td{padding:4px 4px;text-align:left;border-bottom:1px solid var(--line)}
+.sltab thead th{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2)}
+.sltab select{min-width:0;width:100%;max-width:4.6em;padding:4px}
+@media (max-width:420px){.sltab td:last-child,.sltab th:last-child{display:none}}
+.fchip .x{width:24px;height:24px;font-size:1rem}
+.addrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.addrow select:first-child{flex:1 1 200px}
+
+/* Perk-Liste */
+.inv{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column}
+.inv-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.inv-row:last-child{border-bottom:0}
+.inv-name{min-width:0}
+.inv-name b{font-weight:600}
+.inv-name small{display:block;font-size:.8rem;overflow-wrap:anywhere}
+.tag{font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-left:6px;padding:0 5px;border-radius:3px;white-space:nowrap}
+.tag.in{background:var(--good-soft);color:var(--good)}
+.tag.out{background:var(--sunk);color:var(--ink2)}
+.stepper{display:flex;align-items:center;border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.stepper button{border:0;background:var(--sunk);width:28px;height:28px;cursor:pointer;font-weight:700}
+.stepper output{min-width:2.8em;text-align:center;font-size:.9rem}
+.x{border:0;background:transparent;cursor:pointer;color:var(--ink2);font-size:1.2rem;width:28px;height:28px;border-radius:4px}
+.x:hover{color:var(--bad);background:var(--sunk)}
+.catlbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink2);font-weight:700;padding-top:10px}
+.grid-sel{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.box{display:flex;flex-direction:column;gap:5px;padding:10px;border:1px solid var(--line);border-radius:5px;background:var(--paper);min-width:0}
+.box select{width:100%}
+.box small{font-size:.78rem;overflow-wrap:anywhere}
+.sub{display:flex;gap:6px}
+.sub select{flex:1 1 auto;min-width:0}
+.sub input{width:5.5em}
+details.more>summary{cursor:pointer;font-family:var(--f-display);font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:1.05rem;list-style:none;display:flex;justify-content:space-between;gap:8px}
+details.more>summary::after{content:"+";font-family:var(--f-mono)}
+details.more[open]>summary::after{content:"−"}
+details.more>summary::-webkit-details-marker{display:none}
+.more-body{display:flex;flex-direction:column;gap:16px;margin-top:12px}
+.sw{display:flex;align-items:center;gap:8px;font-size:.9rem;cursor:pointer}
+.sw input{accent-color:var(--accent);width:16px;height:16px}
+.rng{display:grid;grid-template-columns:auto minmax(0,1fr) 3em;gap:8px;align-items:center;font-size:.86rem}
+.rng input{accent-color:var(--accent);width:100%}
+.rowgap{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+
+/* Ergebnis */
+.result{padding:0;overflow:hidden}
+.res-top{padding:14px 16px;background:var(--sunk);border-bottom:1px solid var(--line)}
+.res-top .lbl{display:block;margin-bottom:2px}
+.scoreline{display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px 18px;margin-top:8px}
+.big{font-family:var(--f-display);font-weight:800;font-size:3rem;line-height:.9}
+.big small{font-size:.35em;font-family:var(--f-body);font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.08em;margin-left:6px}
+.minis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:1px solid var(--line)}
+.mini{padding:9px 12px;border-right:1px solid var(--line);min-width:0}
+.mini:last-child{border-right:0}
+.mini .k{font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);font-weight:600}
+.mini .v{font-family:var(--f-display);font-weight:800;font-size:1.45rem;line-height:1.1}
+@media (max-width:440px){.minis{grid-template-columns:repeat(2,minmax(0,1fr))}.mini:nth-child(2){border-right:0}.mini:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+.critline{padding:8px 16px;font-size:.88rem;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:4px 14px}
+.critline.cap{background:var(--brass-soft)}
+.critline b{font-family:var(--f-mono);font-weight:500}
+.loadout{list-style:none;margin:0;padding:6px 16px 10px}
+.lrow{display:grid;grid-template-columns:5.6em minmax(0,1fr);gap:10px;padding:6px 0;border-bottom:1px dotted var(--line);align-items:baseline}
+.lrow:last-child{border-bottom:0}
+.lrow .slotname{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink2);font-weight:700}
+.lrow .nm{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;min-width:0}
+.lrow .nm b{font-weight:600}
+.lrow .nm small{flex-basis:100%;font-size:.8rem}
+.famsel{padding:10px 16px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;font-size:.88rem}
+.acts{padding:12px 16px 4px}
+.acts .seg{width:100%}
+.acts .seg button{flex:1 1 auto;padding:7px 8px}
+/* Auf einen Blick */
+.glance .card-h{padding:0 0 10px}
+.gl{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.gi{display:flex;flex-direction:column;gap:3px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;padding:9px 12px;background:var(--sunk);min-width:0}
+.gi .gv{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent)}
+.gi b{font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.gi small{font-size:.8rem;color:var(--ink2);line-height:1.35}
+.gi .lnk,.gi .glinks{margin-top:auto;padding-top:4px}
+.glinks{display:flex;flex-wrap:wrap;gap:4px 14px}
+.lnk{border:0;background:none;padding:0;color:var(--accent);font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;text-decoration:none;align-self:flex-start}
+.lnk:hover{text-decoration:underline}
+.tlwrap{list-style:none}
+.tlinks{margin:8px 0 4px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--sunk);font-size:.85rem}
+.tlinks ul{margin:6px 0;padding-left:18px}
+.tlinks li{margin:2px 0}
+.tlinks small{display:block;color:var(--ink2);line-height:1.4}
+.alist{list-style:none;margin:0;padding:8px 16px 14px;display:flex;flex-direction:column;gap:2px}
+.aitem{display:grid;grid-template-columns:5.2em minmax(0,1fr);gap:10px;padding:8px 0;border-bottom:1px solid var(--line);align-items:start}
+.aitem:last-child{border-bottom:0}
+.gain{font-family:var(--f-mono);font-weight:500;font-size:.86rem;text-align:center;border-radius:4px;padding:2px 4px;background:var(--good-soft);color:var(--good)}
+.gain.neu{background:var(--sunk);color:var(--ink2)}
+.gain.bad{background:var(--bad-soft);color:var(--bad)}
+.aitem b{display:block;font-weight:600}
+.aitem p{font-size:.85rem;color:var(--ink2);margin-top:1px}
+.asub{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink2);font-weight:700;padding-top:10px}
+.empty{font-size:.88rem;color:var(--ink2);padding:6px 0}
+details.dd{border-top:1px solid var(--line)}
+details.dd>summary{cursor:pointer;padding:10px 16px;font-weight:600;font-size:.92rem;list-style:none;display:flex;justify-content:space-between}
+details.dd>summary::after{content:"+";font-family:var(--f-mono);color:var(--ink2)}
+details.dd[open]>summary::after{content:"−"}
+details.dd>summary::-webkit-details-marker{display:none}
+.ddb{padding:0 16px 14px;font-size:.88rem;display:flex;flex-direction:column;gap:8px}
+.statrow{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.statrow span:last-child{font-family:var(--f-mono)}
+.statsrc{font-size:.78rem;color:var(--ink2);padding:0 0 4px 10px}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.flow .arr{color:var(--ink2)}
+
+/* Baum */
+.tree-top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between}
+.tree-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+@media (max-width:900px){.tree-cols{grid-template-columns:minmax(0,1fr)}}
+.tcol{border:1px solid var(--line);border-radius:6px;background:var(--panel);overflow:hidden;min-width:0}
+.tcol-h{padding:10px 12px;background:var(--sunk);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.nodes{list-style:none;margin:0;padding:6px 0}
+.node{display:grid;grid-template-columns:2.6em minmax(0,1fr) auto;gap:8px;padding:5px 12px;align-items:baseline;font-size:.86rem}
+.node .stp{font-family:var(--f-mono);font-size:.78rem;color:var(--ink2);text-align:right}
+.node.got .stp{color:var(--good);font-weight:600}
+.node.got{background:linear-gradient(90deg,var(--accent-soft),transparent 70%)}
+.node .nn small{display:block;font-size:.76rem}
+.node.slotnode .nn b{color:var(--brass)}
+.node .sp{font-family:var(--f-mono);font-size:.78rem;color:var(--ink2)}
+.pathsep{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:var(--ink2);padding:8px 12px 2px;border-top:1px dashed var(--line);margin-top:4px}
+.kv{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.88rem}
+.kv b{font-family:var(--f-mono);font-weight:500}
+.meter{height:8px;background:var(--sunk);border-radius:4px;overflow:hidden;margin:8px 0}
+.meter i{display:block;height:100%;background:var(--accent)}
+
+/* Skill-Leiste (Spiel-Look) */
+.hotbar{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.hk{position:relative;min-height:112px;border:2px solid var(--line);border-radius:8px;background:var(--sunk);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px 6px 8px;gap:3px;min-width:0}
+.hk .key{position:absolute;top:4px;left:7px;font-family:var(--f-display);font-weight:800;font-size:1.05rem;color:var(--ink2)}
+.hk .cd{position:absolute;top:6px;right:7px;font-family:var(--f-mono);font-size:.68rem;color:var(--ink2)}
+.hk b{font-size:.88rem;line-height:1.15;overflow-wrap:anywhere}
+.hk small{font-size:.68rem;line-height:1.2}
+.hk em{font-style:normal;font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);line-height:1.2}
+.hk.ok{border-color:var(--accent)} .hk.ok em{color:var(--good)}
+.hk.warn{border-color:var(--warn)} .hk.warn em{color:var(--warn)}
+@media (max-width:560px){.hotbar{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.sklist{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px 16px;font-size:.86rem}
+/* Fahrplan */
+.road{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.rd{display:grid;grid-template-columns:4.4em minmax(0,1fr) auto;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);align-items:start}
+.rd:last-child{border-bottom:0}
+.rdn{font-family:var(--f-mono);font-size:.8rem;color:var(--ink2)}
+.rd.done .rdn,.rd.done b{color:var(--good)}
+.rd.part .rdn{color:var(--accent)}
+.rd b{display:block;font-weight:600}
+.rd p{font-size:.82rem;color:var(--ink2);overflow-wrap:anywhere}
+.rdsp{font-family:var(--f-mono);font-size:.8rem;text-align:right;white-space:nowrap}
+/* Baum im Spiel-Look */
+.gtree{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:10px}
+@media (max-width:1000px){.gtree{grid-template-columns:minmax(0,1fr)}}
+.gt{border:1px solid var(--line);border-radius:8px;background:var(--sunk);padding:10px 8px;min-width:0}
+.gt h3{text-align:center;margin-bottom:6px}
+.gtree.hasfam .ftree{grid-column:1/-1}
+.ftree .fbr{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px 10px;margin-top:4px;padding-top:6px;border-top:2px solid var(--line)}
+.ftree .fbr .nd::before{display:none}
+.trunk{list-style:none;margin:0;padding:0}
+.nd{position:relative;font-size:.78rem}
+.ndb{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:6px;align-items:center;width:100%;padding:4px 2px;margin:0;border:0;border-radius:5px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;min-height:36px}
+.ndb:hover{background:var(--accent-soft)}
+.ndb:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.nd .ns small{display:block;font-size:.62rem;font-weight:400;color:var(--ink2)}
+.nd.aff .mk{border-color:var(--accent);border-style:dashed}
+.nd.aff .ns{color:var(--accent);font-weight:700}
+.nextup{margin-top:10px;padding:8px 10px;border-radius:6px;background:var(--accent-soft);font-size:.88rem;overflow-wrap:anywhere}
+.hk.fam{border-style:dashed;border-color:var(--brass)}
+.hk.fam.ok,.hk.fam.warn{border-style:solid}
+.pas{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.82rem}
+.nd::before{content:"";position:absolute;left:12px;top:0;bottom:0;width:2px;background:var(--line)}
+.trunk>.nd:first-child::before{top:50%}
+.nd .mk,.legend .mk{position:relative;z-index:1;width:12px;height:12px;justify-self:center;border:2px solid var(--ink2);background:var(--panel);border-radius:50%;display:inline-block}
+.nd.k-skill .mk,.legend .mk.k-skill{width:13px;height:13px;border-radius:2px;transform:rotate(45deg)}
+.nd.k-slot .mk,.legend .mk.k-slot{width:14px;height:14px;border-radius:2px;border-color:var(--brass);background:var(--brass-soft)}
+.nd.got .mk,.legend .mk.got{background:var(--accent);border-color:var(--accent)}
+.nd.got::before{background:var(--accent)}
+.nd.meta .mk,.legend .mk.meta{box-shadow:0 0 0 3px var(--brass)}
+.nd .nl{min-width:0}
+.nd .nl b{font-weight:600;display:block;line-height:1.15}
+.nd .nl small{display:block;font-size:.7rem;line-height:1.2;overflow-wrap:anywhere}
+.nd.k-slot .nl b{color:var(--brass)}
+.nd.k-cap .mk,.legend .mk.k-cap{width:15px;height:15px;border-radius:3px;transform:rotate(45deg);border-color:var(--r-D);background:var(--r-D)}
+.nd.k-cap .nl b{color:var(--r-D)}
+.nd .ns{font-family:var(--f-mono);font-size:.72rem;color:var(--ink2);text-align:right}
+.nd.got .ns{color:var(--good);font-weight:600}
+.fork{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;margin-top:6px;padding-top:8px;border-top:2px solid var(--line)}
+.branch{min-width:0;border-radius:6px;padding:4px 2px}
+.branch.on{background:var(--panel)}
+.branch.off{opacity:.45}
+.bh{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;justify-content:center;padding:2px 2px 6px;font-size:.72rem;text-align:center}
+.bh b{text-transform:uppercase;letter-spacing:.06em}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--ink2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+/* Prestige */
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink2)}
+td.num,th.num{text-align:right}
+tr.cur td{background:var(--accent-soft)}
+tr.cur td:first-child{font-weight:700}
+.check{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:.9rem}
+.check li{display:grid;grid-template-columns:1.2em minmax(0,1fr);gap:8px}
+.check li::before{content:"";width:12px;height:12px;border:2px solid var(--accent);border-radius:2px;margin-top:.3em}
+
+/* DB */
+.dbbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.dbbar input{flex:1 1 220px}
+.dbl{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.dbi{border:1px solid var(--line);border-radius:5px;background:var(--paper);padding:10px 12px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.dbi .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dbi .top b{font-weight:700;margin-right:auto}
+.dbi p{font-size:.86rem;overflow-wrap:anywhere}
+.dbi .meta{font-size:.76rem;color:var(--ink2)}
+.src{columns:2 280px;font-size:.88rem;padding-left:18px;margin:8px 0 0}
+.src li{break-inside:avoid;margin-bottom:4px}
+
+.codebox textarea{width:100%;min-height:5em;font-family:var(--f-mono);font-size:.78rem;resize:vertical}
+.msg{font-size:.85rem}
+footer{font-size:.8rem;color:var(--ink2);padding-top:8px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="wrap band-in">
+    <div>
+      <p class="eyebrow">Attack on Titan Revolution · Roblox · Datenstand Update 5</p>
+      <h1>AoTR <span>Build</span>-Rechner</h1>
+    </div>
+    <div class="band-act">
+      <button class="btn ghost" data-act="code" id="codeBtn" aria-expanded="false">Build-Code</button>
+      <button class="btn ghost" data-act="example">Beispiel laden</button>
+      <button class="btn ghost" data-act="blank" id="blankBtn">Neues Build</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="codePanel" class="card codebox" hidden>
+    <div class="card-h"><h3>Build-Code teilen oder laden</h3><small>Der Code enthält alles, was du eingetragen hast.</small></div>
+    <label class="lbl" for="codeOut">Dein Code</label>
+    <textarea id="codeOut" readonly></textarea>
+    <div class="rowgap" style="margin-top:8px"><button class="btn pri sm" data-act="copy">Code kopieren</button><span class="msg muted" id="copyMsg"></span></div>
+    <label class="lbl" for="codeIn" style="margin-top:12px;display:block">Code einfügen</label>
+    <textarea id="codeIn" placeholder="Build-Code hier einfügen"></textarea>
+    <div class="rowgap" style="margin-top:8px"><button class="btn sm" data-act="import">Build laden</button><span class="msg" id="importMsg"></span></div>
+  </section>
+
+  <div id="exampleNote"></div>
+
+  <nav class="tabs" id="tabs" aria-label="Bereiche">
+    <a href="#build" data-tab="build">Mein Build</a>
+    <a href="#baum" data-tab="baum">Skill-Baum</a>
+    <a href="#prestige" data-tab="prestige">Prestige</a>
+    <a href="#datenbank" data-tab="datenbank">Nachschlagen</a>
+  </nav>
+
+  <section id="view-build" class="view">
+    <ol class="howto">
+      <li>Spielstil, Prestige und Level wählen.</li>
+      <li>Deine Familien und Perks eintragen. Mehr braucht der Algo nicht.</li>
+      <li>Rechts steht dein bestes Build und was du upgraden oder traden solltest.</li>
+    </ol>
+    <section class="card setup" id="setup" aria-label="Grunddaten" style="margin-top:14px"></section>
+    <section class="card glance" id="glance" aria-label="Auf einen Blick" style="margin-top:14px"></section>
+    <div class="grid2" style="margin-top:14px">
+      <div class="col" id="inputs"></div>
+      <div class="col sticky" id="result" aria-label="Ergebnis"></div>
+    </div>
+  </section>
+  <section id="view-baum" class="view" hidden></section>
+  <section id="view-prestige" class="view" hidden></section>
+  <section id="view-datenbank" class="view" hidden></section>
+
+  <footer>
+    Fan-Tool, nicht offiziell. Werte aus Wiki, Patchnotes und Guides (Stand Update 5 vom 31.10.2026). Perk-Werte skalieren linear von +0 bis +10. Einträge mit <span class="unc">≈</span> sind unsicher, weil sich Quellen widersprechen. Dein Build wird nur lokal in diesem Browser gespeichert.
+  </footer>
+</main>
+
+<script>
+(function(){
+'use strict';
+
+/* ================= DATEN ================= */
+const RAR={D:'Divine',S:'Secret',M:'Mythic',L:'Legendary',E:'Epic',R:'Rare',C:'Common'};
+const RORD={D:7,S:6,M:5,L:4,E:3,R:2,C:1};
+const CAT={core:'Core',off:'Offense',def:'Defense',sup:'Support'};
+const CATS=['core','off','def','sup'];
+const CATORD={core:0,off:1,def:2,sup:3};
+const TS={SS:100,S:72,A:56,B:42,C:30,D:18};
+const ODM5=['dmg','spd','ctl','gas','rng'];
+const GEARK=[['dmg','Damage'],['spd','Speed'],['ctl','Control'],['gas','Gas'],['rng','Range'],['dur','Blade Durability'],['cc','Crit Chance'],['cd','Crit Damage']];
+const GR=['–','E-','E','E+','D-','D','D+','C-','C','C+','B-','B','B+','A-','A','A+','S-'];
+const GCOST=[500,1250,2000,3000,5000,7500,11000,17500,20000,35000,50000,70000,100000,135000,169420];
+const STATS={
+  dmg:{n:'ODM/TS-Schaden',u:'%'}, dmgRaid:{n:'Schaden in Raids',u:'%'}, cc:{n:'Crit-Chance',u:'%'}, cd:{n:'Crit-Schaden',u:'%'},
+  swing:{n:'Schwung-Tempo',u:'%'}, burn:{n:'Brandschaden/Treffer',u:'%'},
+  spd:{n:'ODM-Speed',u:'%'}, ctl:{n:'ODM-Control',u:'%'}, gas:{n:'ODM-Gas',u:'%'}, rng:{n:'ODM-Range',u:'%'},
+  dur:{n:'Klingen-Haltbarkeit',u:'%'}, cons:{n:'Conservation-Chance',u:'%'}, gasKill:{n:'Gas pro Kill',u:'%'}, spears:{n:'Extra-Spears',u:''},
+  hp:{n:'Max HP (flach)',u:''}, hpPct:{n:'Max HP',u:'%'}, regen:{n:'HP-Regen',u:'%'}, regenFlat:{n:'HP-Regen (flach)',u:''},
+  dr:{n:'Schadensreduktion',u:'%'}, inj:{n:'Weniger Verletzungen',u:'%'}, ignInj:{n:'Ignorierte Verletzungen',u:''}, bandage:{n:'Extra-Bandagen',u:''},
+  titan:{n:'Titan-Stats',u:'%'}, shDmg:{n:'Shifter-Schaden',u:'%'}, awk:{n:'Awakening-Rate',u:'%'},
+  cdr:{n:'Cooldown-Reduktion',u:'%'}, luck:{n:'Luck',u:'%'}, xp:{n:'EXP',u:'%'}, gold:{n:'Gold',u:'%'}, dash:{n:'Boost-Dashes',u:''}
+};
+
+const PERKS=[
+{n:'Enhanced Metabolism',c:'core',r:'C',t:'C',s:{regen:[2,3]},g:['tank'],x:'HP-Regeneration +2→3 %.'},
+{n:'Critical Hunter',c:'core',r:'R',t:'B',s:{dur:[7.5,15],cons:[3.75,7.5]},g:['odm','blade'],x:'Klingen-Haltbarkeit +7,5→15 %, Conservation-Chance +3,75→7,5 %.',u:'Ältere Versionen gaben Crit-Chance statt Conservation.'},
+{n:'Resilient',c:'core',r:'E',t:'A',s:{awk:[5,10]},sp:{shiftsMax:2},g:['shift'],x:'Bis zu 2 Shifts hintereinander, Awakening-Bar füllt sich 5→10 % schneller.'},
+{n:'Solo',c:'core',r:'E',t:'A',s:{odmAll:[5,7.5]},g:['odm','ts'],x:'Alle ODM/TS-Stats +5→7,5 %.'},
+{n:'Indefatigable',c:'core',r:'L',t:'S',s:{awk:[15,25]},sp:{shiftsMax:3},g:['shift'],x:'Bis zu 3 Shifts hintereinander, Awakening-Bar +15→25 % schneller.'},
+{n:'Perfect Soul',c:'core',r:'L',t:'A',s:{odmAll:[7.5,10]},g:['odm','ts','farm'],x:'Alle ODM/TS-Stats +7,5→10 %.'},
+{n:'Perfect Form',c:'core',r:'L',t:'A',s:{dmg:[7.5,10]},g:['odm','blade'],x:'ODM/TS-Schaden +7,5→10 %; ab 70→50 % Speed immer Maximalschaden. Die Synergie mit Gambler gibt es seit Update 5 nicht mehr.'},
+{n:'Wind Rhapsody',c:'core',r:'L',t:'B',sp:{ccMul:[2,2.4],cdMul:[0.5,0.6]},g:['crit'],x:'Crit-Chance ×2→×2,4, dafür Crit-Schaden ×0,5→×0,6.'},
+{n:'Flame Rhapsody',c:'core',r:'L',t:'C',sp:{cdMul:[2,2.3],ccCap:[5,12.5]},g:['crit'],x:'Crit-Schaden ×2→×2,3, Crit-Chance gedeckelt auf 5→12,5 %.'},
+{n:"Tyrant's Stare",c:'core',r:'L',t:'A',sp:{tyrant:[[25,40],[15,25]]},g:['odm','ts'],x:'Wandelt 25→40 % deiner Crit-Chance und 15→25 % deines Crit-Schadens in Schaden um; Crit-Chance max. 10 %.'},
+{n:"Founder's Blessing",c:'core',r:'M',t:'SS',s:{titan:[10,15],awk:[25,35]},sp:{shiftsMax:5},g:['shift'],x:'Titan-Stats +10→15 %, Awakening +25→35 % schneller, bis zu 5 Shifts, Aggro-Range +150 m.'},
+{n:'Heavenly Restriction',c:'core',r:'M',t:'SS',s:{odmAll:[15,30],dr:[10,15]},sp:{noSkills:1},g:['odm','ts','farm'],x:'Alle ODM/TS-Stats +15→30 %, Schadensreduktion +10→15 %, 10→20 % Chance, Titanen beim Verletzen sofort zu töten. Deaktiviert alle ausgerüsteten Skills.',u:'Werte nach dem Update-4-Balancing; ältere Guides beschreiben andere Effekte.'},
+{n:'Maximum Firepower',c:'core',r:'M',t:'SS',s:{spears:[2,4]},g:['ts'],x:'+2→4 Thunder Spears, kein Rückstoß, Spear-Speed +20→40 %, alle TS-Stats +7,5→15 % (Update 5).'},
+{n:'Mighty',c:'off',r:'C',t:'C',s:{dmg:[5,10]},g:['odm','ts'],x:'ODM/TS-Schaden +5→10 %.'},
+{n:'Cripple',c:'off',r:'C',t:'C',s:{cd:[5,10]},g:['crit'],x:'Crit-Schaden +5→10 %.'},
+{n:'Lucky',c:'off',r:'C',t:'D',s:{cc:[2.5,5]},g:['crit'],x:'Crit-Chance +2,5→5 %.'},
+{n:'Hollow',c:'off',r:'C',t:'D',s:{swing:[2.5,5]},g:['blade'],x:'Schwungdauer +2,5→5 %.'},
+{n:'Forceful',c:'off',r:'R',t:'B',s:{dmg:[7.5,15]},g:['odm','ts'],x:'ODM/TS-Schaden +7,5→15 %.'},
+{n:'Mangle',c:'off',r:'R',t:'B',s:{cd:[10,20]},g:['crit'],x:'Crit-Schaden +10→20 %.'},
+{n:'Blessed',c:'off',r:'R',t:'C',s:{cc:[5,10]},g:['crit'],x:'Crit-Chance +5→10 %.'},
+{n:'Lightweight',c:'off',r:'R',t:'C',s:{swing:[5,10]},g:['blade'],x:'Schwungdauer +5→10 %.'},
+{n:'Reckless Abandon',c:'off',r:'E',t:'A',s:{cd:[20,30],cc:[-10,-7.5]},g:['crit'],x:'Crit-Schaden +20→30 %, Crit-Chance −10→−7,5 %.'},
+{n:'Flawed Release',c:'off',r:'E',t:'C',s:{cc:[10,20],cd:[-30,-25]},g:['crit'],x:'Crit-Chance +10→20 %, Crit-Schaden −30→−25 %.'},
+{n:'Focus',c:'off',r:'E',t:'B',s:{cc:[3,5],cd:[10,15]},g:['crit','blade'],x:'Crit-Chance +3→5 %, Crit-Schaden +10→15 % (ältere Guides: nur mit Blade-Skills).',u:'Bedingung unklar.'},
+{n:'Peerless Strength',c:'off',r:'E',t:'B',s:{dmg:[10,20]},g:['odm','ts'],x:'ODM/TS-Schaden +10→20 %.'},
+{n:'Mutilate',c:'off',r:'E',t:'A',s:{cd:[20,30]},g:['crit'],x:'Crit-Schaden +20→30 % (eine Quelle nennt bis 35 %).',u:'Maximalwert 30 oder 35 %.'},
+{n:'Luminous',c:'off',r:'E',t:'B',s:{cc:[10,15]},g:['crit'],x:'Crit-Chance +10→15 %.'},
+{n:'Speedy',c:'off',r:'E',t:'B',s:{swing:[10,15]},g:['blade'],x:'Schwungdauer +10→15 %.'},
+{n:'Butcher',c:'off',r:'E',t:'B',s:{},g:['blade'],x:'Klingenhiebe treffen 2 Körperteile gleichzeitig.'},
+{n:'Warrior',c:'off',r:'E',t:'B',s:{shDmg:[7.5,15]},g:['shift'],x:'Shifter-Schaden +7,5→15 %.'},
+{n:'Unparalleled Strength',c:'off',r:'L',t:'S',s:{dmg:[15,25]},g:['odm','ts'],x:'ODM/TS-Schaden +15→25 %, ohne Bedingungen.'},
+{n:'Eviscerate',c:'off',r:'L',t:'S',s:{cd:[30,50]},g:['crit'],x:'Crit-Schaden +30→50 %.'},
+{n:'Sanctified',c:'off',r:'L',t:'A',s:{cc:[15,20]},g:['crit'],x:'Crit-Chance +15→20 %.'},
+{n:'Peerless Focus',c:'off',r:'L',t:'S',s:{cc:[7.5,10],cd:[20,30]},g:['crit'],x:'Crit-Chance +7,5→10 %, Crit-Schaden +20→30 %.'},
+{n:'Carnifex',c:'off',r:'L',t:'C',s:{},g:['blade'],x:'Klingenhiebe treffen bis zu 4 Körperteile.'},
+{n:'Warchief',c:'off',r:'L',t:'A',s:{shDmg:[12,20]},g:['shift'],x:'Shifter-Schaden +12→20 %.'},
+{n:'Kengo',c:'off',r:'M',t:'SS',s:{dmg:[40,60],dur:[10,20]},g:['odm','blade'],x:'ODM-Schaden +40→60 %, Klingen-Haltbarkeit +10→20 %, Klingen treffen 2 Limbs gleichzeitig.',u:'Einige Tierlists vertauschen die Texte von Kengo und Soulfeed.'},
+{n:'Black Flash',c:'off',r:'M',t:'SS',sp:{bf:[0.3,0.6]},g:['odm','crit','ts'],x:'Pro 1 % Speed +0,3→0,6 % Crit-Schaden, Crits machen immer Maximalschaden. Phantom: Dashes +10 % schneller und durch Titanen hindurch.',u:'Die Wiki-Builds setzen Black Flash meist in den Core-Slot.'},
+{n:'Art of War',c:'off',r:'M',t:'SS',s:{shDmg:[30,40]},g:['shift'],x:'Shifter-Schaden +30→40 %, Shifter-M1-Tempo +7,5→10 %.'},
+{n:'Everlasting Flame',c:'off',r:'M',t:'SS',s:{burn:[7.5,20]},g:['ts'],x:'Jeder ODM/TS-Treffer macht 7,5→20 % Brandschaden (Update 4), Explosionsradius +15→30 %.'},
+{n:'Enduring',c:'def',r:'C',t:'B',s:{ignInj:[1,2]},g:['tank'],x:'Ignoriert 1→2 Verletzungen.'},
+{n:'Fortitude',c:'def',r:'C',t:'B',s:{hp:[10,25]},g:['tank'],x:'+10→25 Max HP.'},
+{n:'Unyielding',c:'def',r:'R',t:'B',s:{ignInj:[2,3]},g:['tank'],x:'Ignoriert 2→3 Verletzungen.'},
+{n:'Heightened Vitality',c:'def',r:'R',t:'A',s:{hp:[25,50]},g:['tank'],x:'+25→50 Max HP.'},
+{n:'Tough',c:'def',r:'R',t:'C',s:{dr:[3.5,7.5]},g:['tank'],x:'Schadensreduktion +3,5→7,5 %.'},
+{n:'Protection',c:'def',r:'R',t:'B',s:{inj:[5,10]},g:['tank'],x:'Verletzungsrisiko −5→10 %.'},
+{n:'Unbreakable',c:'def',r:'E',t:'A',s:{ignInj:[3,4]},g:['tank'],x:'Ignoriert 3→4 Verletzungen.'},
+{n:'Stalwart Durability',c:'def',r:'E',t:'A',s:{hp:[50,75]},g:['tank'],x:'+50→75 Max HP.'},
+{n:'Hardy',c:'def',r:'E',t:'B',s:{dr:[10,15]},g:['tank'],x:'Schadensreduktion +10→15 %.'},
+{n:'Safeguard',c:'def',r:'E',t:'B',s:{inj:[12,16]},g:['tank'],x:'Verletzungsrisiko −12→16 %.'},
+{n:'Invincible',c:'def',r:'L',t:'A',s:{ignInj:[4,5]},g:['tank'],x:'Ignoriert 4→5 Verletzungen.'},
+{n:'Font of Vitality',c:'def',r:'L',t:'S',s:{hp:[100,125]},g:['tank'],x:'+100→125 Max HP.'},
+{n:'Robust',c:'def',r:'L',t:'A',s:{dr:[20,27.5]},g:['tank','shift'],x:'Schadensreduktion +20→27,5 %.'},
+{n:'Aegis',c:'def',r:'L',t:'B',s:{inj:[25,40]},g:['tank'],x:'Verletzungsrisiko −25→40 %.'},
+{n:'Peerless Constitution',c:'def',r:'L',t:'A',s:{dr:[15,20],inj:[15,25]},g:['tank'],x:'Schadensreduktion +15→20 %, Verletzungsrisiko −15→25 %.'},
+{n:'Immortal',c:'def',r:'M',t:'SS',s:{hp:[100,125],inj:[15,22.5],dr:[22.5,30]},g:['tank','gen'],x:'+100→125 Max HP, Verletzungsrisiko −15→22,5 %, Schadensreduktion +22,5→30 %.'},
+{n:'Adaptation',c:'def',r:'M',t:'SS',s:{regenFlat:[3,5]},sp:{taken:[1.2,0.9]},g:['shift','tank'],x:'HP-Regen +3→5, du nimmst 2×→1,5× Schaden. Triffst dich dieselbe Attacke 2×, wirst du dagegen immun (bis 3 Stacks, als Titan halb so stark). Gerechnet als ×1,2→×0,9 Schaden über Zeit.',u:'Einige Guides beschreiben einen anderen Effekt.'},
+{n:'Gear Beginner',c:'sup',r:'C',t:'D',s:{ctl:[2.5,5]},g:['odm'],x:'ODM-Control +2,5→5 %.'},
+{n:'Extra Bandage',c:'sup',r:'C',t:'D',s:{bandage:[1,1]},g:['tank'],x:'Eine Extra-Bandage (heißt teils „First Aid“).'},
+{n:'Gear Intermediate',c:'sup',r:'R',t:'B',s:{spd:[2.5,5],ctl:[5,10]},g:['odm','farm'],x:'ODM-Speed +2,5→5 %, ODM-Control +5→10 %.'},
+{n:'Fully Stocked',c:'sup',r:'R',t:'B',s:{bandage:[2,3]},g:['tank','sup'],x:'2→3 Extra-Bandagen.'},
+{n:'Experimental Shells',c:'sup',r:'R',t:'A',s:{},g:['sup'],x:'AoE von Flares und Acoustic Shells +25→50 %.'},
+{n:'Gear Expert',c:'sup',r:'E',t:'A',s:{spd:[5,10],ctl:[10,15]},g:['odm','farm'],x:'ODM-Speed +5→10 %, ODM-Control +10→15 %.'},
+{n:'Siphoning',c:'sup',r:'E',t:'B',s:{gasKill:[1,2]},g:['farm'],x:'1→2 % Gas pro Kill (generft).'},
+{n:'Adrenaline',c:'sup',r:'E',t:'B',s:{},g:['tank','farm'],x:'5→10 % Chance, pro Kill 12→20 % der fehlenden HP zu heilen.'},
+{n:"Mankind's Strongest",c:'core',r:'D',t:'SS',only:'odm',s:{odmAll:[20,35]},g:['odm','blade','farm'],x:'Divine (Update 5): Hook-Speed +30→40 %, alle ODM-Stats +20→35 %, nach 3 Crits gibt es Klingen-Haltbarkeit zurück.',u:'Weitere Effekte nicht vollständig bekannt.'},
+{n:'Sanguine Destroyer',c:'core',r:'D',t:'SS',only:'ts',s:{cons:[10,15],spears:[4,8],odmAll:[20,35]},g:['ts'],x:'Divine (Update 5): Conservation +10→15 %, +4→8 Spears, alle TS-Stats +20→35 %, TS-Treffer machen Corrosion.'},
+{n:'Avatar of Ymir',c:'core',r:'D',t:'SS',s:{titan:[20,35],awk:[35,55]},sp:{shiftsMax:6},g:['shift'],x:'Divine (Update 5): Shift ab 60 % Bar, +4→7 Shifts, Awakening-Bar +35→55 % schneller, Aggro-Range 175→250 m, Titan-Stats +20→35 %.'},
+{n:'Godforged',c:'off',r:'D',t:'SS',s:{dmg:[55,77],cc:[15,20],cd:[30,50]},g:['odm','ts','crit'],x:'Divine (Update 5): ODM/TS-Schaden +45→65 %, Crit-Chance +15→20 %, Crit-Schaden +30→50 %, dazu stapelnd +5→6 % Schaden (max. 5×).',u:'Gerechnet mit 2 Stacks im Schnitt.'},
+{n:'Stormwrath',c:'off',r:'D',t:'SS',s:{cdr:[20,30],shDmg:[50,65]},g:['shift'],x:'Divine (Update 5): Skill-Cooldown −20→30 %, Shifter-Schaden +50→65 %, Punch-Tempo +15→25 %.'},
+{n:'Eternal',c:'def',r:'D',t:'SS',s:{hp:[150,200],dr:[35,45],inj:[25,40]},g:['tank','gen'],x:'Divine (Update 5): +150→200 HP, Schadensreduktion +35→45 %, Verletzungsrisiko −25→40 %.'},
+{n:'Foresight',c:'def',r:'D',t:'SS',s:{ignInj:[4,6],dr:[10,18]},g:['tank','gen'],x:'Divine (Update 5): ignoriert 4→6 Verletzungen, 10→20 % Ausweichen, während Skills +20→35 % Skill-Schaden und 15→30 % Resistenz (dafür keine I-Frames bei Skills).',u:'Ausweichen als Schadensreduktion gerechnet.'},
+{n:'Branching Paths',c:'sup',r:'D',t:'SS',s:{cons:[4,8]},g:['sup','farm','blade'],x:'Divine (Update 5): Die Party bekommt pro Kill 4→8 % Klingen/Spears zurück; Schadensbonus gedeckelt bei 30 %.',u:'Effekt nur grob bekannt.'},
+{n:'Wings of Freedom',c:'sup',r:'D',t:'SS',s:{gas:[20,30],spd:[25,35],odmAll:[10,15]},g:['odm','ts','farm'],x:'Divine (Update 5): Gas +20→30 %, Speed +25→35 %, alle ODM/TS-Stats +10→15 %, Dashes kosten 25 % weniger Gas.'},
+{n:'15th Commander',c:'sup',r:'D',t:'SS',s:{odmAll:[5,10]},g:['sup','odm'],x:'Divine (Update 5): Verbündete +5→10 % ODM/TS-Stats; Flares und Orders halber Cooldown und Effekt ×1,6→2,0.'},
+{n:'Bombardier',c:'off',r:'L',t:'C',s:{},g:['ts'],x:'Update 5: Kanonen-Schaden +15→25 %, Fläche +7,5→12,5 %, Cooldown −5→7,5 %. Nur für Kanonen.'},
+{n:'Blitzkrieg',c:'off',r:'M',t:'C',s:{},g:['ts'],x:'Update 5: Kanonen-Schaden +25→40 %, Fläche +12,5→20 %, Cooldown −10→15 %, Treffer machen Burn. Nur für Kanonen.'},
+{n:'Trauma Battery',c:'sup',r:'E',t:'A',s:{},g:['sup'],x:'Teammates regenerieren 2,5→5 % HP, wenn du dich heilst (Update 4).'},
+{n:'Munitions Expert',c:'sup',r:'E',t:'B',s:{},g:['ts'],x:'Zusätzliche Thunder Spears.',u:'Genaue Werte unbekannt.'},
+{n:'Gear Master',c:'sup',r:'L',t:'S',s:{spd:[10,15],ctl:[15,20]},g:['odm','farm'],x:'ODM-Speed +10→15 %, ODM-Control +15→20 %.',u:'Neuere Tierlists nennen 10→12,5 % / 12,5→15 %.'},
+{n:'Exhumation',c:'sup',r:'L',t:'B',s:{gasKill:[2,3.5]},g:['farm'],x:'2→3,5 % Gas pro Kill (generft).'},
+{n:'Peerless Commander',c:'sup',r:'L',t:'B',s:{},g:['sup'],x:'Orders und Flares wirken ×1,1→1,25 (stackt, Update 4), Party-Regen nach Orders, Acoustic Shells zwingen Abnormals zum Loslassen.'},
+{n:'Courage Catalyst',c:'sup',r:'L',t:'B',s:{},g:['sup','shift'],x:'Titan-Kills senken die Cooldowns deiner Mitspieler um 1 s und geben ihnen 5→10 s lang +7,5→10 % ODM-Control.'},
+{n:'Sixth Sense',c:'sup',r:'L',t:'S',s:{rng:[7.5,10]},g:['odm','farm'],x:'ODM-Range +7,5→10 %, alle Titanen auf der Karte sichtbar.'},
+{n:'Munitions Master',c:'sup',r:'L',t:'A',s:{},g:['ts'],x:'Zusätzliche Thunder Spears.',u:'Genaue Werte unbekannt.'},
+{n:'Unwavering Belief',c:'sup',r:'M',t:'SS',s:{},g:['sup'],x:'Neu in Update 4: jeder Kill senkt die Skill-Cooldowns der ganzen Party, mit leichtem Nachteil bei der Cooldown-Skalierung.',u:'Genaue Werte unbekannt.'},
+{n:'Tatsujin',c:'sup',r:'M',t:'SS',s:{gas:[10,15],spd:[10,20],ctl:[15,25],rng:[15,25]},g:['odm','ts','farm'],x:'ODM-Gas +10→15 %, Speed +10→20 %, Control und Range +15→25 %.'},
+{n:'Font of Inspiration',c:'sup',r:'M',t:'SS',s:{},g:['sup','odm','shift'],x:'Orders/Flares: halber Cooldown, Effekt ×1,25→1,5, Orders auch in der Luft. Order-Ziele bekommen +10→15 % Schadensreduktion (Update 4).'},
+{n:'Soulfeed',c:'sup',r:'M',t:'SS',s:{gasKill:[1.5,2.5]},g:['farm','odm'],x:'1,5→2,5 % Gas und bis 1,5 % HP pro Kill, Umrisse aller Titanen sichtbar.'},
+{n:'Explosive Fortune',c:'sup',r:'M',t:'SS',s:{},g:['sup','ts'],x:'Halbiert Order- und Flare-Cooldowns, Effekte ×1,25→1,5. Eine Quelle beschreibt stattdessen eine Chance, Spears zurückzubekommen.',u:'Quellen widersprechen sich.'}
+];
+
+/* Utility-Wert für Effekte, die sich nicht als Zahl rechnen lassen (in Build-Score-Einheiten, auf +10) */
+const UT={'15th Commander':{sup:.4,odm:.08,'*':.06},'Wings of Freedom':{farm:.05,odm:.03},'Branching Paths':{farm:.06,sup:.08,'*':.03},'Avatar of Ymir':{shift:.1},'Foresight':{tank:.05,'*':.02},'Perfect Form':{'*':.03},"Founder's Blessing":{shift:.04},'Heavenly Restriction':{odm:.12,ts:.1,farm:.14,'*':.05},'Maximum Firepower':{ts:.35},'Butcher':{odm:.06,farm:.06},'Carnifex':{odm:.09,farm:.09},'Kengo':{odm:.06,farm:.06},'Black Flash':{odm:.1,ts:.08,farm:.08,'*':.04},'Art of War':{shift:.04},'Everlasting Flame':{ts:.05},'Adaptation':{shift:.15,tank:.1},'Experimental Shells':{sup:.06},'Adrenaline':{tank:.05,farm:.04,'*':.02},'Trauma Battery':{sup:.1},'Munitions Expert':{ts:.12},'Munitions Master':{ts:.2},'Peerless Commander':{sup:.14,'*':.03},'Courage Catalyst':{sup:.14,shift:.12,odm:.06,'*':.04},'Sixth Sense':{farm:.06,'*':.03},'Unwavering Belief':{sup:.28,'*':.08},'Font of Inspiration':{sup:.3,odm:.16,shift:.16,ts:.12,'*':.08},'Soulfeed':{farm:.12,odm:.08,'*':.05},'Explosive Fortune':{sup:.25,ts:.12,shift:.12,'*':.06}};
+const FUT={Ackerman:{odm:.08,'*':.04},Helos:{'*':.12},Fritz:{shift:.15,'*':.05},Shiki:{'*':.08},Yeager:{shift:.1,tank:.08},Reiss:{sup:.15,shift:.08,farm:.03},Zoe:{'*':.06},Tybur:{shift:.04,farm:.03},Braun:{shift:.06,tank:.06},Arlert:{shift:.05},Leonhart:{shift:.03},Galliard:{shift:.04},Finger:{shift:.03},Braus:{tank:.04,'*':.02},Smith:{farm:.02}};
+const DEMAND={'Black Flash':'stark gefragt','Heavenly Restriction':'wenig gefragt','Feathered Bicorn':'sehr gefragt',Ackerman:'extrem gefragt',Yeager:'extrem gefragt',Reiss:'mittel gefragt',Arlert:'mittel gefragt'};
+
+const FAMS=[
+{n:'Shiki',r:'S',t:'SS',sh:true,rage:true,s:{dmg:20,dmgRaid:20,cc:15,cd:15,ctl:10,gas:10,rng:10,titan:10,dash:2,luck:7.5},sl:{core:1},x:'Rage-Meter: +15 % ODM-Stats, +125 HP, +3 HP-Regen und Cooldown-Reset. Kann shiften. Nur über 64 Achievements (inkl. Champion oder Warbringer) freischaltbar, nicht handelbar.',u:'Ob der Bonus-Slot ein Core-Slot ist, unterscheidet sich je nach Quelle.'},
+{n:'Fritz',r:'M',t:'SS',sh:true,s:{titan:20,cc:15,cd:15,dmgRaid:10,dmg:10,cdr:10,gold:10,xp:10,awk:10},sl:{def:1,sup:1},x:"Shifter-Stats +20 %, Crit +15 %, Schaden +10 %, Cooldowns −10 %, Gems/Gold/EXP +10 % (Gold/EXP auch für die Party). Skills: Chaos, Founder's Order, Founder's Vengeance, The Coordinate."},
+{n:'Helos',r:'M',t:'SS',sh:false,helos:true,s:{dmg:30,cc:20,cd:20,dmgRaid:20,spd:15,ctl:15,gas:15,rng:15,dur:15,cons:7.5,cdr:10,dash:1},sl:{off:1,sup:1},x:'Kann nicht shiften. Undying Hero: pro Kill oder Boss-Treffer +1 % Schaden, +1 % Crit-Schaden, +1 % DR und +0,6 % Crit-Chance (max. 20 Stacks); ab 15 Stacks explodieren Angriffe.'},
+{n:'Ackerman',r:'L',t:'S',sh:false,rage:true,s:{dmg:20,dmgRaid:20,cc:15,cd:15,ctl:10,gas:10,rng:10,dur:10,dash:1},sl:{off:1},x:'Kann nicht shiften. Double Jump. Skills: Rage Mode (+15 % ODM-Stats, +125 HP, +3 Regen, Cooldown-Reset), Let it RIP, Swift Strikes.'},
+{n:'Yeager',r:'L',t:'S',sh:true,s:{titan:20,cc:15,cdr:10},sl:{def:1},x:'Update 5: +20 % Beast-Titan-Stats und +15 % Schaden im Attack Raid. +20 % Attack-Titan-Stats, Shift-Cooldown −10 %. Skills: Berserk Mode, Resolve (volle HP, 50 % Gas), Invigorate (zweites Leben), Shifter Regen.'},
+{n:'Reiss',r:'L',t:'S',sh:true,s:{titan:10,xp:10,gold:10},sl:{sup:1},x:'+5 % EXP für die Party, Gold +10 % (Update 4). Skills: Order: Command (Party-Buff), Conquer (markiert und stunnt Titanen), Arise (Awakening-Bar schneller).'},
+{n:'Zoe',r:'E',t:'A',sh:false,s:{ctl:10,spd:10},sl:{},x:'Kann nicht shiften. Upgrade-Kosten −5 %. Last Stand: einmal pro Match bei tödlichem Treffer 30 % HP zurück, +20 % Schaden, +60 % DR für 30 s.'},
+{n:'Tybur',r:'E',t:'A',sh:true,s:{titan:10,gold:10},sl:{},x:'+10 % Warhammer-Titan, Shift-Dauer +10 %, Shifter Regen. Beste Farm-Familie im Epic-Bereich.'},
+{n:'Leonhart',r:'E',t:'A',sh:true,s:{titan:10,dmg:10},sl:{},x:'+10 % Female-Titan, Titan-Laufgeschwindigkeit +10 %, Shifter Regen, Crimson Bloom, +10 % Schaden im Female Raid (Update 5).'},
+{n:'Galliard',r:'E',t:'A',sh:true,s:{titan:10,cd:10},sl:{},x:'+10 % Jaw-Titan, Titan-Angriffstempo +10 %, Shifter Regen.'},
+{n:'Finger',r:'E',t:'A',sh:true,s:{titan:10,gas:10},sl:{},x:'+10 % Cart-Titan, längere Shift-Dauer, Shifter Regen.'},
+{n:'Braun',r:'E',t:'A',sh:true,s:{titan:10,hpPct:10},sl:{},x:'+10 % Armored-Titan, −10 % Schaden als Titan, Shifter Regen, +10 % Schaden im Armored Raid (Update 5). Bester Tank im Epic-Bereich.'},
+{n:'Arlert',r:'E',t:'A',sh:true,s:{titan:10,cc:10},sl:{},x:'+10 % Colossal-Titan, Nuke-AoE +20 %, Shifter Regen, +10 % Schaden im Colossal Raid (Update 5).'},
+{n:'Ksaver',r:'E',t:'A',sh:true,s:{titan:10,dmg:10,rng:10},sl:{},x:'+10 % Beast-Titan, Shifter Regen.'},
+{n:'Azumabito',r:'R',t:'B',sh:true,s:{dmg:5,ctl:5,titan:-5},sl:{},x:'Solider früher ODM-Pick.'},
+{n:'Braus',r:'R',t:'B',sh:true,s:{},sl:{},x:'Potato: heilt 20–30 % HP. Max HP ±5 %.',u:'Ob +5 % oder −5 % Max HP, widerspricht sich je nach Quelle.'},
+{n:'Smith',r:'R',t:'B',sh:true,s:{gold:2.5,xp:2.5,dmg:-5},sl:{},x:'Gold/EXP-Bonus gilt für die ganze Party.'},
+{n:'Springer',r:'R',t:'C',sh:true,s:{hpPct:5,cd:5,cc:-5},sl:{},x:'Gemischte Boni.'},
+{n:'Kirstein',r:'R',t:'C',sh:true,s:{spd:-5},sl:{},x:'+10 % Pferde-Stats.'},
+{n:'Grice',r:'R',t:'C',sh:true,s:{titan:5,gas:-5},sl:{},x:'+5 % Jaw-Titan.'},
+{n:'Kruger',r:'R',t:'C',sh:true,s:{titan:5,cc:-5},sl:{},x:'+5 % Attack-Titan.'}
+].concat(['Reeves','Blouse','Inocenio','Munsell','Boyega','Ral','Bozado','Pikale','Hume','Iglehaut'].map(n=>({n,r:'C',t:'D',sh:true,s:{},sl:{},x:'Keine Boni.'})));
+
+const MEMS=[
+{n:'Sparks of Black',y:'off',st:5,t:'SS',leg:1,sc:[0.2,0.4],g:['odm','ts','crit'],x:'Legendär (Update 5): Crits werden zu 20 % Super-Crits mit +40 % Schaden. Super-Crits senken Skill-Cooldowns um 3 s und machen 20 % Bleed.'},
+{n:'Shatterpoint',y:'off',st:5,t:'S',leg:1,s:{dmg:15},g:['odm','blade','crit'],u:'Schadenswert grob geschätzt.',x:'Legendär (Update 5): Jeder Limb-Treffer in Folge +15 % Schaden-Taken (max. +75 %), dann ein Super-Crit mit Maximalschaden. Reset nach 5 s ohne Treffer.'},
+{n:'Living Legend',y:'def',st:5,t:'SS',leg:1,s:{hpPct:25,inj:100},g:['tank','gen','sup'],x:'Legendär (Update 5): HP ×1,25, keine Verletzungen, −30 % schädliche Status-Effekte, Orders +30 %, +35 % erhaltene Heilung.'},
+{n:'Untouchable',y:'def',st:5,t:'B',leg:1,s:{dmg:8},g:['odm','tank'],u:'Grob geschätzt; dein Schaden-Taken ×1,5 ist nicht eingerechnet.',x:'Legendär (Update 5): Jede Sekunde ohne Schaden +2 % auf alle Stats und +3 % Schild (max. 10 s). Du nimmst aber ×1,5 Schaden.'},
+{n:'Overclocked',y:'sup',st:5,t:'S',leg:1,s:{dmg:15,spd:20},g:['odm','farm'],u:'Durchschnitt grob geschätzt.',x:'Legendär (Update 5): Hooks machen bis zu 100 % Schaden. Jeder Hook in Folge +3 % ODM/TS-Schaden und +6 % Speed (max. 15 Stacks), Reset bei Bodenkontakt.'},
+{n:'Divine Decree',y:'sup',st:5,t:'SS',leg:1,g:['sup'],x:'Legendär (Update 5): Flares und Orders ×1,4, alle Verbündeten bekommen 15 % Schild. Eine Flare oder Order löst deine anderen gleicher Art mit aus.'},
+{n:'Blood Awakening',y:'core',st:5,t:'S',leg:1,g:['shift'],x:'Legendär (Update 5): Awakening-Bar startet voll, 90 s Awakening, +50 % Schaden und 30 % Resistenz, dafür 75 % langsamere Bar im Awakening.'},
+{n:'Elementalist',y:'core',st:5,t:'A',leg:1,g:['ts','gen'],x:'Legendär (Update 5): Burn wird zu 25 % Inferno (+50 % Schaden), Bleed +15 s Limb-Regeneration, Corrosion +35 %, Fear +20 % Crit-Anfälligkeit, Shock 70 % Schaden.'},
+{n:'Quakestrike',y:'off',st:3,t:'S',g:['odm','blade','farm'],x:'+1,5 % Schaden pro Kill, bis 50 Stacks (+75 %). Reset bei Klingen-Reload oder Shift.'},
+{n:'Furyforge',y:'off',st:3,t:'C',g:['odm'],x:'+0,4 % Schaden pro 1 % fehlender HP.'},
+{n:'Stalwart',y:'off',st:2,t:'D',g:['blade'],x:'+3 % Klingen-Haltbarkeit pro gebrochenem Segment.'},
+{n:'Crescendo',y:'off',st:1,t:'B',g:['odm','sup'],x:'+20 % Schaden gegen betäubte Titanen.'},
+{n:'Blitzblade',y:'off',st:1,t:'C',g:['blade'],x:'M1 gedrückt halten erhöht den Schaden.'},
+{n:'Swiftshot',y:'off',st:1,t:'C',g:['odm','ts','farm'],x:'25 % schnelleres Nachfüllen.'},
+{n:'Assassin',y:'off',st:3,t:'SS',s:{cdr:15},g:['blade','odm'],x:'Blade-Skills +25 % Schaden, Skill-Cooldown −15 %.'},
+{n:'Amputation',y:'off',st:3,t:'D',g:['blade'],x:'Crits auf Limbs (keine Bosse) stoppen deren Regeneration.'},
+{n:'Stormcharged',y:'off',st:2,t:'B',g:['shift'],x:'+3 % Schaden pro Shifter im Match.'},
+{n:'Overslash',y:'off',st:4,t:'SS',g:['odm','farm','blade'],x:'30 % des überschüssigen Finishing-Schadens treffen Titanen im 100-m-Radius (5 s Cooldown).'},
+{n:'Gambler',y:'off',st:4,t:'S',g:['odm','ts','crit'],x:'Jeder Treffer macht zufällig 75–130 % Schaden. Die Synergie mit Perfect Form wurde in Update 5 entfernt.'},
+{n:'Marksman',y:'off',st:0,t:'A',g:['ts'],x:'+0,4 % Spear-Schaden pro 5 m Flugstrecke.',u:'Sterne und genaue Werte nicht bestätigt.'},
+{n:'Afterimages',y:'off',st:0,t:'A',g:['ts'],x:'Spears hinterlassen Nachexplosionen.',u:'Sterne und genaue Werte nicht bestätigt.'},
+{n:'Steel Frame',y:'off',st:0,t:'C',g:['ts'],x:'Lohnt sich nur bei Spear-Treffern aus nächster Nähe.',u:'Sterne und genaue Werte nicht bestätigt.'},
+{n:'Surgeshot',y:'off',st:0,t:'C',g:['ts'],x:'Thunder-Spear-Memory.',u:'Effekt nicht bestätigt.'},
+{n:'Resilience',y:'def',st:3,t:'B',g:['tank'],x:'Ignoriert einen tödlichen Treffer pro Match.'},
+{n:'Vengeflare',y:'def',st:3,t:'C',g:['tank'],x:'Reflektiert 50 % des Schadens für 20 s, solange Tough As Nails aktiv ist.'},
+{n:'Aegisurge',y:'def',st:2,t:'A',g:['tank','farm'],x:'Schild mit 15 % deiner HP für 20 s nach einem Titan-Kill.'},
+{n:'Guardian',y:'def',st:1,t:'B',s:{ignInj:2},g:['tank'],x:'Ignoriert 2 Verletzungen pro Match.'},
+{n:'Deflectra',y:'def',st:1,t:'C',g:['tank'],x:'5 % Chance, eingehenden Schaden zu ignorieren.'},
+{n:'Riposte',y:'def',st:2,t:'S',g:['tank','odm'],x:'Erfolgreiche Counter exekutieren den Titan sofort.'},
+{n:'Necromantic',y:'def',st:4,t:'A',g:['tank'],x:'Nach einem ignorierten Tod: +20 % Schaden, +25 % HP, +15 % Speed.'},
+{n:'Thanatophobia',y:'def',st:4,t:'B',g:['tank'],x:'Unter 40 % HP: +25 % DR, +15 % weniger Verletzungen, heilt alle 15 s eine Verletzung.'},
+{n:'Omnirange',y:'sup',st:3,t:'C',g:['sup'],x:'Fernwirkende Support-Skills treffen alle Spieler auf der Karte.'},
+{n:'Vitalize',y:'sup',st:3,t:'B',g:['sup'],x:'Heilst du einen Teammate, bekommt ihr beide +25 % Schaden.'},
+{n:'Flashstep',y:'sup',st:3,t:'S',g:['gen'],x:'Flips und Dashes haben I-Frames.'},
+{n:'Lifefeed',y:'sup',st:2,t:'C',g:['farm','tank'],x:'Titan-Kill heilt 2–3 % HP.'},
+{n:'Cooldown Blitz',y:'sup',st:1,t:'A',s:{cdr:10},g:['sup','shift','gen'],x:'Skill-Cooldown −10 %.'},
+{n:'Mendmaster',y:'sup',st:1,t:'D',g:['sup'],x:'Extra-Bandagen beim Nachfüllen von Gas und Klingen.'},
+{n:'Tactician',y:'sup',st:3,t:'A',g:['sup'],x:'Effekte von Support-Skills +15 %.'},
+{n:'Gem Fiend',y:'sup',st:2,t:'B',g:['farm'],x:'+10 % Gems aus AFK-Zone und Mission-Streak.'},
+{n:'Apotheosis',y:'sup',st:4,t:'SS',s:{awk:15},g:['shift'],x:'Awakening-Bar +15 % schneller, Shift ab 60 % Bar, +1,25 % Schaden je 10 % Bar (max. +12,5 %).'},
+{n:'Bloodthief',y:'sup',st:4,t:'S',g:['tank','odm'],x:'3 % HP alle 2 s, solange du an einem Titan eingehakt bist.'}
+];
+const MTYPE={core:'Core',off:'Offense',def:'Defense',sup:'Support'};
+
+const ARTS=[
+{n:'Scarf',r:'5★',s:{},x:'Hook-Speed +40 %, Dash-Cooldown −20 %, Rage-Bar-Verbrauch −25 %.'},
+{n:'Cloak',r:'5★',s:{},add:1,x:'Aggro-Range +175 m, +1 maximaler Shift.'},
+{n:'Lantern',r:'4★',s:{dmg:10},x:'Licht um den Spieler, ODM-Schaden +10 %.'},
+{n:'Key',r:'4★',s:{gold:7.5},x:'Gold +7,5 %.'},
+{n:'Scars',r:'–',s:{},x:'Shifter-Artefakt. In Wiki-Builds der Standard-Träger für Substats.'},
+{n:'Colossal Scars',r:'Mythic',s:{},x:'Colossal-Titan-Stats und Shifts (Colossal Raid, Update 4).'},
+{n:'Scorched Cloak',r:'Mythic',s:{},x:'Mehr Brandschaden und Regeneration (Colossal Raid, Update 4).'},
+{n:'Feathered Bicorn',r:'Mythic',s:{},x:'ODM-Stats und Cooldowns (Update 4).',u:'Genaue Werte unbekannt.'},
+{n:'Hoodie',r:'–',s:{},x:'In Wiki-Builds als Substat-Träger genutzt.'},
+{n:'Rifle',r:'–',s:{},x:'In Wiki-Builds als Substat-Träger genutzt.'},
+{n:'Onyx Sheath',r:'–',s:{},x:'Achievement „Razor Edge“ (10.000.000 Gesamtschaden).'},
+{n:'Journal',r:'3★',s:{},x:'Werte unbekannt.'},
+{n:'Anderes Artefakt',r:'–',s:{},x:'Nur die Substats zählen.'}
+];
+const SUBK=['dmg','spd','ctl','gas','rng','cc','cd','cdr','cons','shDmg','hpPct','dr','luck','gold','xp'];
+const TAL={luck:{k:'luck',v:7.5,n:'Luck +7,5 %'},xp:{k:'xp',v:15,n:'EXP +15 %'},gold:{k:'gold',v:15,n:'Gold +15 %'}};
+
+const PRE=[
+{p:0,rank:'Ohne Prestige',need:null,xp:null,cap:100,mem:0,conv:null},
+{p:1,rank:'Private',need:100,xp:1952500,cap:125,mem:1,conv:1500},
+{p:2,rank:'Corporal',need:125,xp:3429553,cap:150,mem:2,conv:1250},
+{p:3,rank:'Sergeant',need:150,xp:5265320,cap:175,mem:4,conv:1000},
+{p:4,rank:'–',need:175,xp:7334070,cap:200,mem:5,conv:1000},
+{p:5,rank:'Captain',need:200,xp:11673242,cap:225,mem:7,conv:1000}
+];
+
+const N=(n,sp,s,k,x)=>({n,sp,s:s||null,k:k||'stat',x:x||''});
+const TREES={
+ off:{n:'Offense',base:[N('Damage I',1,{dmg:2.5}),N('Duration I',1,{swing:2}),N('Hand Grinder',3,null,'skill','Befreit dich aus dem Griff (40 s CD)'),N('Durability I',1,{dur:1}),N('Duration II',2,{swing:3}),N('Durability II',2,{dur:2}),N('Blade Dance',3,null,'skill','Sprint-Schnitt in Mausrichtung (25 s CD)'),N('Durability III',3,{dur:3}),N('Crit Chance I',1,{cc:1}),N('Crit Damage I',1,{cd:5}),N('Offense-Perk-Slot',5,null,'slot','Schaltet den Offense-Slot frei'),N('Damage II',2,{dmg:5}),N('Crit Chance II',2,{cc:2})],
+  L:{n:'Damage',d:'Roher Schaden & Schwung',nodes:[N('Rising Slash',3,null,'skill','Sprung-Schnitt (45 s CD)'),N('Duration III',3,{swing:4}),N('Durability IV',4,{dur:4}),N('Refined Technique',3,null,'pass','Limbs regenerieren 20 % langsamer'),N('Damage III',3,{dmg:7.5}),N('Duration IV',4,{swing:5}),N('Bloodlust',3,null,'pass','+5 % Schaden 5 s nach Kill'),N('Durability V',5,{dur:6}),N('Damage IV',4,{dmg:10}),N('Lethal Tempo',3,null,'skill','Tötet 3 Titanen in Reihe (65 s CD)'),N('Duration V',5,{swing:7}),N('Damage V',5,{dmg:12.5})]},
+  R:{n:'Crit',d:'Crit-Chance & Crit-Schaden',nodes:[N('Drill Thrust',3,null,'skill','Bohrer-Angriff (45 s CD). Update 5: Schaden 0,65× → 0,20×'),N('Crit Chance III',2,{cc:2}),N('Crit Damage II',2,{cd:6}),N('Eye Gouge',3,null,'pass','Treffer auf Augen sind immer Crits'),N('Crit Chance IV',3,{cc:3}),N('Crit Damage III',3,{cd:7}),N('Momentum',3,null,'pass','+5 % ODM-Speed 5 s nach Crit'),N('Crit Chance V',4,{cc:4}),N('Crit Damage IV',4,{cd:8}),N('Torrential Steel',3,null,'skill','4 s Wirbel-Angriff (50 s CD)'),N('Crit Chance VI',5,{cc:6}),N('Crit Damage V',5,{cd:9})]}},
+ sup:{n:'Support',base:[N('Durability I',1,{dur:2}),N('Control I',1,{ctl:2.5}),N('Bandages',3,null,'skill','2 Bandagen, je 25 HP + 1 Verletzung'),N('Durability II',2,{dur:3}),N('Trained Cadet',3,null,'pass','Klingen laden beim Brechen automatisch nach'),N('Regen I',1,{regen:1}),N('Red Flare',3,null,'skill','Markiert 5 Titanen: +10 % Schaden, +15 % Crit-Anfälligkeit'),N('Durability III',3,{dur:5}),N('Target Acquisition',3,null,'pass','Aim-Assist hakt am Nacken ein'),N('Control II',2,{ctl:4}),N('Support-Perk-Slot',5,null,'slot','Schaltet den Support-Slot frei')],
+  L:{n:'Triage',d:'Regeneration & Heilung',nodes:[N('Regen II',1,{regen:1}),N('Advanced Medic',3,null,'pass','Bandagen heilen 35 HP und Augen-Verletzungen'),N('Regen III',1,{regen:1}),N('Portable Resupply',3,null,'skill','Nachschub-Station mit 2 Refills (180 s CD)'),N('Regen IV',2,{regen:1}),N('Master Medic',3,null,'pass','3 Bandagen à 50 HP'),N('Regen V',2,{regen:1}),N('Resourceful',3,null,'pass','Resupply-CD −25 %, 3 Refills'),N('Regen VI',2,{regen:2})]},
+  R:{n:'Commander',d:'Cooldowns, Orders & Flares',nodes:[N('Cooldown I',1,{cdr:15}),N('Acoustic Shells',3,null,'skill','Titanen lassen gegriffene Spieler fallen (45 s CD)'),N('Injury I',1,{inj:5}),N('Order: Advance',3,null,'skill','Team: +10 % Speed, +15 % Control für 20 s'),N('Injury II',2,{inj:7.5}),N('Black Flare',3,null,'skill','Markiert 10 Titanen: +25 % Schaden, +25 % Crit-Anfälligkeit'),N('Cooldown II',2,{cdr:20}),N('Order: Rage',3,null,'skill','Team: +10 % Schaden, +20 % Crit-Schaden'),N('Injury III',3,{inj:12.5})]}},
+ def:{n:'Defense',base:[N('Health I',1,{hp:5}),N('Injury I',1,{inj:5}),N('Counter',3,null,'skill','Kontert einen Angriff und lähmt das Limb (20 s CD)'),N('Health II',1,{hp:5}),N('Injury II',2,{inj:10}),N('Defense-Perk-Slot',5,null,'slot','Schaltet den Defense-Slot frei'),N('Health III',2,{hp:7.5}),N('Survivalist I',3,null,'pass','Ein Input weniger zum Befreien')],
+  L:{n:'Endurance',d:'Schadensreduktion',nodes:[N('Tank I',1,{dr:2}),N('Hardy Counter',3,null,'skill','Befreien und Titan direkt töten (40 s CD)'),N('Tank II',1,{dr:2}),N('Tank III',2,{dr:3}),N('Survivalist II',3,null,'pass','Noch ein Input weniger'),N('Tank IV',2,{dr:3}),N('Tank V',3,{dr:4}),N('Forceful Rebound',3,null,'pass','Limbs regenerieren 75 % langsamer'),N('Tank VI',3,{dr:4}),N('Tank VII',4,{dr:5}),N('Tough As Nails',3,null,'skill','−15 % Schaden, +5 % je Verletzung (60 s CD)'),N('Tank VIII',5,{dr:7})]},
+  R:{n:'Survival',d:'Max HP',nodes:[N('Health IV',2,{hp:7.5}),N('Emergency Relocation',3,null,'skill','30 % HP opfern: Verletzung heilen, +40 % Crit-Chance'),N('Health V',2,{hp:7.5}),N('Health VI',3,{hp:10}),N('Super Guts',3,null,'pass','Emergency Relocation kostet nur 15 % HP'),N('Health VII',3,{hp:10}),N('Health VIII',3,{hp:10}),N('Adrenaline',3,{ignInj:2},'pass','Ignoriert 2 Verletzungen'),N('Health IX',4,{hp:12.5}),N('Health X',4,{hp:12.5}),N('Autodidact',3,null,'pass','Emergency Relocation hält 20 s'),N('Health XI',5,{hp:17.5})]}}
+};
+
+/* Spielstile: Gewichte für den Build-Score (D Schaden, S Überleben, M Mobilität, H Titan, C Cooldowns, B Klingen-Ausdauer, E Farm-Boni) */
+const PW={
+ odm:{D:1,S:.18,M:.45,H:0,C:.15,B:.12,E:.03},
+ ts:{D:1,S:.2,M:.35,H:0,C:.2,B:0,E:.03},
+ shift:{D:.25,S:.45,M:.12,H:1,C:.4,B:0,E:.03},
+ sup:{D:.4,S:.35,M:.3,H:.1,C:.6,B:.05,E:.03},
+ tank:{D:.35,S:1,M:.15,H:.15,C:.15,B:.05,E:.03},
+ farm:{D:.7,S:.15,M:.6,H:.05,C:.15,B:.1,E:.4}
+};
+const NSP={odm:.08,ts:.08,farm:.04,sup:.45,shift:.45,tank:.2};
+const W={
+ odm:{odm:1,blade:1,crit:.95,ts:.5,shift:0,tank:.55,sup:.45,farm:.65,gen:.85},
+ ts:{ts:1,odm:.8,crit:.85,blade:.25,shift:0,tank:.55,sup:.5,farm:.6,gen:.85},
+ shift:{shift:1,tank:.8,sup:.7,crit:.55,odm:.3,ts:.3,blade:.2,farm:.45,gen:.85},
+ sup:{sup:1,tank:.75,odm:.55,ts:.5,crit:.45,shift:.3,blade:.35,farm:.55,gen:.85},
+ tank:{tank:1,sup:.6,odm:.55,crit:.4,ts:.45,shift:.45,blade:.4,farm:.5,gen:.85},
+ farm:{farm:1,odm:.85,blade:.7,crit:.7,sup:.55,ts:.5,tank:.6,shift:.15,gen:.85}
+};
+const ARCH={
+ odm:{n:'ODM-Klingen',d:'Klingen-DPS am Nacken',tree:{sup:'R',off:'L',def:'R'},order:['off','sup','def'],
+  mems:['Quakestrike','Overslash','Gambler','Assassin','Flashstep','Tactician','Crescendo'],
+  bar:['Order: Rage','Red Flare','Black Flare','Lethal Tempo','Rising Slash'],
+  art:'Scarf + Scars, beide Substats auf ODM Damage (Helos-Build) oder auf ODM Speed (Ackerman-Build).',
+  upg:['Damage','Speed','Blade Durability','Gas','Control','Range'],
+  fams:['Helos','Ackerman','Shiki','Fritz','Zoe'],
+  treeNote:'Offense links (Damage) für Lethal Tempo und Rising Slash. Drill Thrust und Torrential Steel rechts wurden in Update 5 stark generft. Wer keine Offense-Skills auf der Leiste hat (Ackerman, Helos), nimmt mit Black Flash trotzdem rechts (Crit) wegen der Werte. Am Ende jedes Pfads wartet der Capstone (20 SP).'},
+ ts:{n:'Thunder Spear',d:'Explosiv-Schaden mit Spears',tree:{sup:'R',off:'L',def:'R'},order:['off','sup','def'],
+  mems:['Marksman','Afterimages','Tactician','Gambler','Quakestrike','Apotheosis','Flashstep'],
+  bar:['Dual Shot','Black Flare','Red Flare','Order: Rage','Revolving Pierce'],
+  art:'Substats auf ODM Damage; Thunder Spears übernehmen deine ODM-Stats. Als Buffer lieber Conservation Chance.',
+  upg:['Damage','Speed','Gas','Range','Control','Blade Durability'],
+  fams:['Helos','Ackerman','Shiki','Zoe'],
+  treeNote:'Spears profitieren von rohem Schaden: Offense links (Damage).'},
+ shift:{n:'Shifter',d:'Titan-Form als Haupt-DPS',tree:{sup:'R',off:'L',def:'L'},order:['sup','def','off'],
+  mems:['Apotheosis','Flashstep','Gambler','Quakestrike','Cooldown Blitz','Stormcharged','Afterimages'],
+  bar:['Shifting','Flashbang','Black Flare','Dual Shot','Red Flare'],
+  art:'Scars + Rifle, beide Substats auf Cooldown Reduction.',
+  upg:['Speed','Gas','Damage','Control','Range','Blade Durability'],
+  fams:['Fritz','Shiki','Yeager','Reiss','Braun','Leonhart'],
+  treeNote:'Support rechts für Cooldowns, Defense links für Schadensreduktion.'},
+ sup:{n:'Support',d:'Orders, Flares & Party-Buffs',tree:{sup:'R',off:'L',def:'R'},order:['sup','def','off'],
+  mems:['Tactician','Flashstep','Aegisurge','Cooldown Blitz','Vitalize','Afterimages','Gem Fiend'],
+  bar:['Order: Rage','Order: Advance','Black Flare','Red Flare','Acoustic Shells'],
+  art:'Scars + Hoodie, Substats auf Conservation Chance oder Cooldown Reduction.',
+  upg:['Speed','Gas','Control','Damage','Range','Blade Durability'],
+  fams:['Reiss','Fritz','Helos','Zoe'],
+  treeNote:'Commander-Pfad (Support rechts) bringt Order: Rage, Black Flare und −35 % Cooldown.'},
+ tank:{n:'Tank',d:'Überleben in Raids & Waves',tree:{sup:'L',off:'L',def:'L'},order:['def','sup','off'],
+  mems:['Bloodthief','Resilience','Necromantic','Thanatophobia','Aegisurge','Flashstep','Riposte'],
+  bar:['Hardy Counter','Tough As Nails','Counter','Bandages','Portable Resupply'],
+  art:'Substats auf Damage Reduction oder HP, Rest auf ODM Damage.',
+  upg:['Damage','Blade Durability','Speed','Gas','Control','Range'],
+  fams:['Braun','Yeager','Fritz','Zoe'],
+  treeNote:'Defense links (Endurance) bringt bis −30 % Schaden, Support links heilt.'},
+ farm:{n:'Farmen',d:'Gold, EXP & Gems grinden',tree:{sup:'R',off:'L',def:'R'},order:['off','sup','def'],
+  mems:['Gem Fiend','Flashstep','Aegisurge','Lifefeed','Quakestrike','Overslash','Cooldown Blitz'],
+  bar:['Order: Advance','Lethal Tempo','Bandages','Red Flare','Black Flare'],
+  art:'Scars + Scarf, beide Substats auf ODM Speed.',
+  upg:['Speed','Damage','Gas','Blade Durability','Control','Range'],
+  fams:['Tybur','Reiss','Fritz','Helos','Smith'],
+  treeNote:'Schnelles Clearen: Offense links, Support rechts für Order: Advance.'}
+};
+const FAMX={
+ Ackerman:{odm:{tree:{off:'R'},bar:['Swift Strikes','Let it RIP','Black Flare','Order: Rage','Rage Mode'],mems:['Quakestrike','Gambler','Apotheosis','Tactician'],note:'Female-Raids: Swift Strikes gegen Red Flare und Quakestrike gegen Flashstep tauschen.'},ts:{bar:['Lightning Bolt','Dual Shot','Black Flare','Order: Rage','Rage Mode'],mems:['Tactician','Afterimages','Marksman','Apotheosis']},farm:{bar:['Order: Advance','Swift Strikes','Rage Mode','Let it RIP','frei'],mems:['Gem Fiend','Aegisurge','Lifefeed','Flashstep']}},
+ Helos:{odm:{tree:{off:'R'},bar:['Avenging Execution','Order: Revolution','Black Flare','Order: Rage','Kingslayer'],note:'Statt Unparalleled Strength geht Perfect Form, sobald du Gambler hast.'},ts:{bar:['Avenging Execution','Order: Revolution','Black Flare','Hellfire Barrage','Kingslayer']},sup:{bar:['Avenging Execution','Order: Revolution','Black Flare','Order: Rage','Red Flare']},farm:{bar:['Order: Advance','Order: Revolution','Black Flare','Lethal Tempo','Kingslayer'],mems:['Gem Fiend','Aegisurge','Flashstep','Lifefeed']}},
+ Fritz:{odm:{tree:{off:'L',def:'L'},bar:['Chaos','Lethal Tempo','Hardy Counter','Black Flare',"Founder's Order"],note:"Chaos und Founder's Order funktionieren auch ohne Titan. Seit Update 5 macht Torrential Steel nur noch 0,30× Schaden (vorher 0,80×), deshalb Offense links mit Lethal Tempo."},ts:{tree:{off:'R',def:'L'},bar:['Chaos','Hellfire Barrage','Combustive Counter','Black Flare',"Founder's Order"]},sup:{bar:["Founder's Order",'Order: Rage','Order: Advance','Black Flare','Chaos']},farm:{bar:['Chaos','Order: Advance','Lethal Tempo','Black Flare',"Founder's Order"]},shift:{tree:{off:'R'},bar:['Shifting','Hellfire Barrage','Combustive Counter','Black Flare','Chaos'],note:'Mit Klingen: Torrential Steel statt Hellfire Barrage, Hardy Counter statt Combustive Counter. In Female-Raids Courage Catalyst gegen Explosive Fortune tauschen.'}},
+ Yeager:{shift:{bar:['Shifting','Black Flare','Acoustic Shells','Resolve','Order: Rage'],note:'Attack-Titan-Baum: Hardening, Stomp, Roar, Corkscrew Punch, Berserk Mode. Resonance-Baum komplett (6 Attack-Titan-Shards).'}},
+ Reiss:{shift:{bar:['Shifting','Conquer','Order: Command','Black Flare','Acoustic Shells'],note:'In Female-Raids Conquer gegen Revolving Pierce oder Rising Slash tauschen.'}},
+ Braun:{shift:{bar:['Shifting','Acoustic Shells','Black Flare','Shifter Regen','Revolving Pierce'],note:'Armored-Titan-Baum: Phase Shift (beim Boss ausschalten), Unstoppable Charge, Roar, Earthbreaker, Courage.'}},
+ Leonhart:{shift:{bar:['Shifting','Dual Shot','Red Flare','Black Flare','Flashbang'],note:'Female-Titan-Baum: Hardening, Shriek, Roundhouse Kick, Side Kick, Grapple. Mimicry: Armored Titan (5 Armored-Shards).'}},
+ Shiki:{odm:{bar:['Swift Strikes','Let it RIP','Black Flare','Acoustic Shells','Rage Mode']},ts:{bar:['Thunder Barrage','Lightning Bolt','Black Flare','Acoustic Shells','Rage Mode']},shift:{bar:['Shifting','Thunder Barrage','Lightning Bolt','Black Flare','Acoustic Shells'],mems:['Quakestrike','Apotheosis','Gambler','Overslash'],note:'Mit Klingen: Swift Strikes und Let it RIP statt Thunder Barrage und Lightning Bolt. In Female-Raids Quakestrike gegen Stormcharged tauschen.'}},
+ Zoe:{odm:{bar:['Last Stand','Bandages','Emergency Relocation','Order: Rage','Black Flare'],mems:['Quakestrike','Furyforge','Crescendo','Gambler'],tree:{off:'L',def:'R'}},ts:{bar:['Last Stand','Bandages','Emergency Relocation','Black Flare','Revolving Pierce'],mems:['Quakestrike','Furyforge','Afterimages','Marksman'],tree:{off:'L',def:'R'}},sup:{bar:['Last Stand','Flashbang','Red Flare','Dual Shot','Black Flare'],mems:['Aegisurge','Tactician','Afterimages','Gem Fiend']}},
+ Braus:{tank:{mems:['Bloodthief','Thanatophobia','Resilience','Necromantic']}}
+};
+
+const SKCD={'Bandages':5,'Red Flare':30,'Black Flare':35,'Order: Advance':55,'Order: Rage':85,'Acoustic Shells':45,'Portable Resupply':180,'Counter':20,'Hardy Counter':40,'Tough As Nails':60,'Emergency Relocation':55,'Hand Grinder':40,'Blade Dance':25,'Rising Slash':45,'Drill Thrust':45,'Lethal Tempo':65,'Torrential Steel':50,'Let it RIP':65,'Shifter Regen':100};
+const SKX={
+ 'Swift Strikes':{src:'Ackerman-Familie',x:'Teleportiert zu bis zu 5 Titanen in der Nähe und tötet sie.'},
+ 'Let it RIP':{src:'Ackerman-Familie',x:'6 s Wirbel-Angriff Richtung Maus. Update 5: Schaden 1,00× → 0,50× (0,65× mit Shiki).'},
+ 'Rage Mode':{src:'Ackerman / Shiki',x:'Rage-Bar voll: +15 % ODM-Stats, +125 HP, +3 Regen, setzt Cooldowns zurück.'},
+ 'Avenging Execution':{src:'Helos-Familie',x:''},'Order: Revolution':{src:'Helos-Familie',x:''},'Kingslayer':{src:'Helos-Familie',x:''},
+ 'Shifting':{src:'Titan-Serum',x:'Verwandlung in deinen Titan, ab 75 % Awakening-Bar (mit Apotheosis ab 60 %).'},
+ 'Shifter Regen':{src:'Familien-Skill',x:'Regeneriert 50 HP und heilt alle Verletzungen.'},
+ 'Resolve':{src:'Yeager-Familie',x:'Volle HP und 50 % Gas.'},
+ 'Conquer':{src:'Reiss-Familie',x:'Stunnt alle Pure Titans in der Nähe für 5 s.'},
+ 'Order: Command':{src:'Reiss-Familie',x:'Buff für Verbündete in der Nähe: Schadensreduktion, Crit-Chance, Haltbarkeit und Regen.'},
+ 'Last Stand':{src:'Zoe-Familie',x:'Bei tödlichem Treffer: HP zurück, Verletzungen ignorieren, mehr Schaden und Schadensreduktion.'},
+ 'Hellfire Barrage':{src:'Fritz / Thunder Spears',x:''},'Combustive Counter':{src:'Fritz-Familie',x:''},'Chaos':{src:'Fritz-Familie',x:''},
+ 'Thunder Barrage':{src:'Shiki-Familie',x:''},'Lightning Bolt':{src:'Thunder Spears',x:''},'Dual Shot':{src:'Thunder Spears',x:''},'Revolving Pierce':{src:'Thunder Spears',x:''},'Flashbang':{src:'Utility-Skill',x:''},
+ 'frei':{src:'Freier Slot',x:'Nach Wahl belegen.'}
+};
+const FSK={
+ Fritz:[{n:'Chaos',cd:121,x:'Blitzkugel: +10 % Awakening-Bar, explodiert und tötet bis zu 9 Titanen in der Nähe. Verbündete bekommen 40 % der Bar.'},{n:"Founder's Order",cd:156,x:'Du und alle Verbündeten: +15 % Stats für 20 s und 15 % HP über 2 s. Als Titan wird Roar stärker.'},{n:"Founder's Vengeance",p:1,x:'Einmal pro Run: Bei Beinahe-Tod 13 s unverwundbar, Ressourcen voll und ein Extra-Shift.'},{n:'The Coordinate',p:1,x:'Mitspieler bekommen 5 % der Awakening-Bar, die du sammelst.'}],
+ Helos:[{n:'Avenging Execution',cd:42,x:'Dash in Lichtgeschwindigkeit: 2,25× Schaden, tötet bis zu 7 Titanen im Weg.'},{n:'Kingslayer',cd:42,x:'Speerwurf mit Schockwelle: 2× Schaden, tötet bis zu 10 Titanen in der Nähe.'},{n:'Order: Revolution',cd:135,x:'125 HP, heilt bis zu 3 Verletzungen, alle Verbündeten +15 % ODM-Stats für 30 s.'},{n:'Undying Hero',p:1,x:'Pro Kill oder Boss-Treffer 1 Stack (max. 20): je +1 % Schaden, Crit-Schaden und DR, +0,6 % Crit-Chance. Ab 15 Stacks explodieren Angriffe.'}],
+ Ackerman:[{n:'Swift Strikes',x:'Teleportiert zu bis zu 5 Titanen in der Nähe und tötet sie (Ackerman-Version von Lethal Tempo).'},{n:'Let it RIP',cd:65,x:'6 s Wirbel-Angriff Richtung Maus. Update 5: Schaden 1,00× → 0,50×.'},{n:'Rage Mode',x:'Rage-Bar füllt sich durch Kills und Schaden: +15 % ODM-Stats, +125 HP, +3 Regen, setzt Cooldowns zurück.'}],
+ Shiki:[{n:'Rage Mode',x:'Rage-Bar füllt sich durch Kills und Schaden: +15 % ODM-Stats, +125 HP, +3 Regen, setzt Cooldowns zurück.'},{n:'Swift Strikes',x:'Teleportiert zu bis zu 5 Titanen in der Nähe und tötet sie.'},{n:'Let it RIP',cd:65,x:'6 s Wirbel-Angriff Richtung Maus.'},{n:'Thunder Barrage',x:''}],
+ Yeager:[{n:'Resolve',cd:87,x:'90 HP über Zeit, heilt alle Verletzungen sofort, 50 % Gas zurück.'},{n:'Shifter Regen',cd:100,x:'50 HP über Zeit, heilt alle Verletzungen.'},{n:'Berserk Mode',t:1,x:'Nur als Attack Titan: mehr Schaden und Tempo, dafür mehr Schaden-Taken und HP-Verlust.'},{n:'Invigorate',p:1,x:'Zweites Leben: rettet deine Serie und füllt die HP.'}],
+ Reiss:[{n:'Order: Command',cd:38,x:'Speer in den Boden: 15 s für Verbündete in der Nähe +15 % Crit-Chance, +15 % Crit-Schaden, +15 % Klingen-Haltbarkeit, +40 % DR, +4 Regen.'},{n:'Conquer',x:'Markiert bis zu 25 Titanen im Umkreis von 800 m (Update 5): +10 % Schaden gegen sie und 15 s bewegungsunfähig (Raid ca. 5 s, Bosse immun).'},{n:'Arise',p:1,x:'Awakening-Bar pro Treffer/Kill 30 % schneller.'}],
+ Zoe:[{n:'Last Stand',x:'Bei 40 % HP für 30 s: keine Heilung, Verletzungen ignoriert, +15 % Schaden, +30 % DR, +15 % ODM-Speed.'}],
+ Leonhart:[{n:'Shifter Regen',cd:100,x:'50 HP über Zeit, heilt alle Verletzungen.'},{n:'Crimson Bloom',x:''}]
+};
+['Tybur','Galliard','Finger','Braun','Arlert','Ksaver'].forEach(n=>{FSK[n]=[{n:'Shifter Regen',cd:100,x:'50 HP über Zeit, heilt alle Verletzungen.'}];});
+Object.entries(FSK).forEach(([fam,l])=>l.forEach(k=>{const e=SKX[k.n];if(!e||!e.src||/Familie|Familien-Skill/.test(e.src))SKX[k.n]={src:(e&&e.src&&e.src!==fam+'-Familie'&&/Familie/.test(e.src)?e.src.replace(/-Familie$/,'')+' / '+fam:fam)+'-Familie',x:k.x||(e&&e.x)||''};else if(!e.x&&k.x)e.x=k.x;if(k.cd)SKCD[k.n]=k.cd;}));
+SKX['Rage Mode'].src='Ackerman / Shiki-Familie';
+SKX['Shifter Regen']={src:'Yeager und Epic-Shifter-Familien',x:'50 HP über Zeit, heilt alle Verletzungen.'};
+SKX['Hellfire Barrage']={src:'Spear-Variante von Torrential Steel',x:'Thunder-Spear-Version von Torrential Steel (Offense rechts).'};
+SKX['Combustive Counter']={src:'Spear-Variante von Hardy Counter',x:'Thunder-Spear-Version von Hardy Counter (Defense links).'};
+const SKT={'Bandages':4,'Black Flare':4,'Hand Grinder':4,'Lethal Tempo':4,'Hardy Counter':4,'Emergency Relocation':4,'Shifter Regen':4,'Order: Advance':3,'Drill Thrust':1,'Torrential Steel':1,'Counter':3,'Tough As Nails':3,'Red Flare':2,'Order: Rage':2,'Rising Slash':2,'Blade Dance':1};
+const NEEDT=new Set(['Shifting','Berserk Mode']);
+const OSW={'Torrential Steel':'Lethal Tempo','Lethal Tempo':'Torrential Steel','Drill Thrust':'Rising Slash','Rising Slash':'Drill Thrust','Hellfire Barrage':'Lethal Tempo'};
+const FTREE={Fritz:[
+ {n:"Founder's Vengeance",sp:3,k:'pass',s:null,x:'Wurzel des Baums. Bei Beinahe-Tod 13 s unverwundbar, Ressourcen voll, ein Extra-Shift und eine zweite Chance.'},
+ {n:'Defense Perk Slot',sp:7,k:'slot',cat:'def',s:null,x:'Extra-Defense-Slot (Fritz).'},
+ {n:'Support Perk Slot',sp:7,k:'slot',cat:'sup',s:null,x:'Extra-Support-Slot (Fritz).'},
+ {n:'Chaos',sp:3,k:'skill',s:null,x:'Blitz: +10 % Awakening-Bar, tötet bis zu 9 Titanen in der Nähe (121 s Cooldown).'},
+ {n:"Founder's Order",sp:3,k:'skill',s:null,x:'Roar: +15 % Stats für alle Verbündeten für 20 s, 15 % HP über 2 s (156 s Cooldown).'},
+ {n:'The Coordinate',sp:1,k:'pass',s:null,x:'Mitspieler bekommen 5 % deiner Awakening-Bar.'}]};
+function setFamTree(fn){if(FTREE[fn]){TREES.fam={n:'Familien-Baum',fam:fn,base:FTREE[fn],L:{n:'',nodes:[]},R:{n:'',nodes:[]}};}else delete TREES.fam;}
+function famLoc(sk){const T=TREES.fam;if(!T)return null;const i=T.base.findIndex(x=>x.n===sk);return i>=0?{t:'fam',seg:'base',i,nd:T.base[i]}:null;}
+const skLoc=sk=>SKLOC[sk]||famLoc(sk);
+['off','def','sup'].forEach(t=>['L','R'].forEach(sg=>TREES[t][sg].nodes.push(N('Capstone',20,null,'cap',`Update 5: schaltet Divine-Perks im ${CAT[t]}-Slot und legendäre ${CAT[t]}-Memories frei.`))));
+const SKLOC={};
+['sup','off','def'].forEach(t=>{TREES[t].base.forEach((nd,i)=>{if(nd.k==='skill')SKLOC[nd.n]={t,seg:'base',i,nd};});['L','R'].forEach(sg=>TREES[t][sg].nodes.forEach((nd,i)=>{if(nd.k==='skill')SKLOC[nd.n]={t,seg:sg,i,nd};}));});
+SKLOC['Hellfire Barrage']=SKLOC['Torrential Steel'];SKLOC['Combustive Counter']=SKLOC['Hardy Counter'];
+
+const SOURCES=[
+['AOTR Carry: Update-5-Patchnotes (Divine-Perks, Capstones, Balance)','https://www.aotrcarry.com/updates'],
+['U7BUY: Divine-Perks craften (Update 5)','https://www.u7buy.com/blog/how-to-get-divine-perks-aotr/'],
+['Gaming Route: Update-5-Release','https://gamingroute.com/attack-on-titan-revolution-codes/'],
+['Grimzeal: Familien-Seiten (Update 4)','https://grimzeal.com/attack-on-titan-revolution/fritz'],
+['Offizielles AoTR-Wiki (Fandom): Prestige, Patches, Meta-Builds','https://official-attack-on-titans-revolution.fandom.com/wiki/Prestige'],
+['Wiki: Ackerman Meta-Builds','https://official-attack-on-titans-revolution.fandom.com/wiki/Ackerman/Meta_Builds'],
+['Wiki: Helos Meta-Builds','https://official-attack-on-titans-revolution.fandom.com/wiki/Helos/Meta_Builds'],
+['Pro Game Guides: Perks-Tierlist mit Werten','https://progameguides.com/roblox/attack-on-titan-revolution-perks-tier-list/'],
+['Pro Game Guides: Family-Buffs','https://progameguides.com/roblox/all-family-buffs-and-perks-in-attack-on-titan-revolution-roblox'],
+['Pro Game Guides: Prestige & Memories','https://progameguides.com/roblox/attack-on-titan-revolution-prestige-system-explained/'],
+['Narcosis: Tierlist Update 4','https://www.narcosis-the-game.com/attack-on-titan-revolution-aotr-tier-list/'],
+['Item Level Gaming: kompletter Skill-Baum','https://itemlevel.net/aot-revolution-complete-skill-tree-guide/'],
+['Roonby: Update-4-Guide','https://roonby.com/2026/04/25/attack-on-titan-revolution-update-4-guide-new-winter-event-codes-raids-more/'],
+["Deltia's Gaming: alle Perks (Mai 2026)",'https://deltiasgaming.com/all-perks-in-attack-on-titan-revolution-roblox/'],
+['Try Hard Guides: Update-2-Memories','https://tryhardguides.com/attack-on-titan-revolution-complete-update-2-and-halloween-guide/'],
+['game.guide: Trade-Calculator mit aktuellen Key-Werten','https://www.game.guide/attack-on-titan-revolution-trade-calculator'],
+["Grind'n'Strat: Trading-Guide und Nachfrage",'https://grindnstrat.com/aot-revolution-values-list']
+];
+
+/* ================= HILFEN ================= */
+const by=a=>Object.fromEntries(a.map(x=>[x.n,x]));
+const PERK=by(PERKS), MEM=by(MEMS), FAM=by(FAMS), ART=by(ARTS);
+PERKS.forEach(p=>{p.s=p.s||{};});
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nf1=new Intl.NumberFormat('de-DE',{maximumFractionDigits:1});
+const nf0=new Intl.NumberFormat('de-DE',{maximumFractionDigits:0});
+const L=(a,l)=>Array.isArray(a)?a[0]+(a[1]-a[0])*l/10:a;
+const sgn=v=>(v>0?'+':v<0?'−':'±')+nf1.format(Math.abs(v));
+const fmtStat=(k,v)=>sgn(v)+(STATS[k]&&STATS[k].u?' '+STATS[k].u:'');
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const pct=d=>(Math.exp(d)-1)*100;
+const fmtGain=g=>(g>=0?'+':'−')+nf1.format(Math.abs(g))+' %';
+const rarChip=r=>`<span class="rar" style="--rc:var(--r-${r})">${RAR[r]}</span>`;
+const tierB=t=>`<span class="tier t-${t}" title="Tier ${t}">${t}</span>`;
+const uncM=u=>u?` <span class="unc" title="${esc(u)}">≈</span>`:'';
+const stars=n=>n?`<span class="stars">${'★'.repeat(n)}</span>`:'';
+const utv=(tbl,key,a)=>{const u=tbl[key];if(!u)return 0;return u[a]!=null?u[a]:(u['*']||0);};
+
+/* ================= STATE ================= */
+const KEY='aotr-build-v2';
+const EXAMPLE={v:2,example:true,arch:'odm',prestige:3,level:142,fams:['Ackerman','Braun','Smith'],famLock:'',
+ inv:[{n:'Kengo',l:4},{n:'Black Flash',l:2},{n:'Unparalleled Strength',l:7},{n:'Perfect Form',l:5},{n:'Immortal',l:3},{n:'Robust',l:6},{n:'Gear Master',l:8},{n:'Font of Inspiration',l:0},{n:'Eviscerate',l:6},{n:'Hardy',l:10},{n:'Tatsujin',l:1},{n:'Courage Catalyst',l:5},{n:'Speedy',l:9},{n:'Speedy',l:2},{n:'Stalwart Durability',l:4},{n:'Sanctified',l:6},{n:'Luminous',l:10},{n:'Art of War',l:3}],
+ mems:['Quakestrike','Gambler','Aegisurge','Lifefeed'],
+ arts:[{a:'Scarf',s:[{k:'dmg',v:6},{k:'spd',v:4}]},{a:'Lantern',s:[{k:'cc',v:3},{k:'',v:0}]}],
+ talents:['luck','luck','xp'],tree:{budget:120,paths:{sup:'R',off:'R',def:'R'},mode:'sp',own:[],free:0},
+ base:{cc:5,cd:50,hp:100,spd:100},raid:false,rage:false,helos:0,quake:0,xpNow:2400000,xph:300000,titan:false};
+const BLANK={v:2,example:false,arch:'odm',prestige:0,level:1,fams:[],famLock:'',inv:[],mems:[],arts:[{a:'',s:[{k:'',v:0},{k:'',v:0}]},{a:'',s:[{k:'',v:0},{k:'',v:0}]}],talents:[],tree:{budget:0,paths:{sup:'R',off:'R',def:'R'},mode:'tap',own:[],free:0},base:{cc:5,cd:50,hp:100,spd:100},raid:false,rage:false,helos:0,quake:0,xpNow:0,xph:200000,titan:false,slots:{},famN:{},gear:{}};
+const clone=o=>JSON.parse(JSON.stringify(o));
+function fix(o){
+  if(o&&o.v===1){o=Object.assign({},o,{v:2,fams:o.family?[o.family]:[]});}
+  const r=Object.assign(clone(BLANK),o);
+  r.tree=Object.assign(clone(BLANK.tree),o.tree||{});r.tree.paths=Object.assign({sup:'R',off:'R',def:'R'},(o.tree||{}).paths||{});
+  const om=(o.tree||{}).mode;r.tree.mode=om==='tap'||om==='sp'?om:(o.tree?'sp':'tap');
+  r.tree.userPath=r.tree.userPath&&typeof r.tree.userPath==='object'?r.tree.userPath:{};
+  const fo={};if(r.tree.famOwn&&typeof r.tree.famOwn==='object')for(const n in r.tree.famOwn){if(FTREE[n]&&Array.isArray(r.tree.famOwn[n]))fo[n]=[...new Set(r.tree.famOwn[n].map(Number).filter(i=>i>=0&&i<FTREE[n].length))];}r.tree.famOwn=fo;
+  r.tree.own=[...new Set((Array.isArray(r.tree.own)?r.tree.own:[]).filter(nodeById))];r.tree.free=Math.max(0,Math.round(+r.tree.free||0));
+  r.base=Object.assign(clone(BLANK.base),o.base||{});
+  if(!Array.isArray(r.arts)||r.arts.length<2)r.arts=clone(BLANK.arts);
+  r.arts.forEach(a=>{if(!Array.isArray(a.s))a.s=[];while(a.s.length<2)a.s.push({k:'',v:0});});
+  const fc={};(r.fams||[]).forEach(n=>{if(FAM[n])fc[n]=(fc[n]||0)+1;});
+  if(o.famN&&typeof o.famN==='object')for(const n in o.famN)if(fc[n])fc[n]=Math.max(fc[n],clamp(Math.round(+o.famN[n]||1),1,99));
+  r.fams=Object.keys(fc);r.famN=fc;
+  if(r.famLock&&!r.fams.includes(r.famLock))r.famLock='';
+  r.inv=(r.inv||[]).filter(x=>PERK[x.n]).map(x=>({n:x.n,l:clamp(+x.l||0,0,10),on:!!x.on}));
+  r.mems=(r.mems||[]).filter(n=>!n||MEM[n]);
+  r.prestige=clamp(+r.prestige||0,0,5);
+  if(!ARCH[r.arch])r.arch='odm';
+  r.titan=!!r.titan;
+  const gr={};GEARK.forEach(([k])=>{const x=(r.gear&&r.gear[k])||{};gr[k]={g:clamp(Math.round(+x.g||0),0,GR.length-1),w:(k!=='cc'&&k!=='cd')||x.w===''||x.w==null||!isFinite(+x.w)?'':clamp(+x.w,-100,5000)};});r.gear=gr;
+  const so={};if(r.slots&&typeof r.slots==='object')for(const n in r.slots){if(!FAM[n])continue;const x=r.slots[n]||{},y={};CATS.forEach(c=>{y[c]=clamp(Math.round(+x[c]||0),0,2);});so[n]=y;}r.slots=so;
+  return r;
+}
+function load(){try{const t=localStorage.getItem(KEY)||localStorage.getItem('aotr-build-v1');if(!t)return null;const o=JSON.parse(t);return o&&(o.v===1||o.v===2)?fix(o):null;}catch(e){return null;}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+let S=load()||fix(clone(EXAMPLE));
+const UI={act:'up',db:'perk',dbCat:'all',q:'',confirmBlank:false,lastAdd:''};
+const CUR={};
+const canSh=f=>!!(f&&f.sh&&S.titan);
+const famCnt=n=>(S.famN&&S.famN[n])||1;
+const famTotal=()=>S.fams.reduce((a,n)=>a+famCnt(n),0);
+const slotsOf=fn=>(S.slots&&S.slots[fn])||(FAM[fn]&&FAM[fn].sl)||{};
+const slotTxt=sl=>CATS.filter(c=>sl[c]).map(c=>`+${sl[c]} ${CAT[c]}`).join(' · ');
+
+/* ================= SKILL-BAUM ================= */
+const memSlots=()=>PRE[S.prestige].mem;
+const capLvl=()=>PRE[S.prestige].cap;
+function basePaths(fn){const x=FAMX[fn]&&FAMX[fn][S.arch];return Object.assign({},ARCH[S.arch].tree,(x&&x.tree)||{});}
+function critCapped(){const m=CUR.sol&&CUR.sol.m;if(!m||!CUR.tree||m.tyrAdd>0)return false;return m.ccPreCap-(CUR.tree.stats.cc||0)>=100;}
+function recPaths(fn){const r=basePaths(fn);if(r.off==='R'&&critCapped())r.off='L';return r;}
+function recWhy(fn){return basePaths(fn).off==='R'&&critCapped()?'Offense links statt rechts: Du hast ohne Skill-Baum schon 100 % Crit-Chance, die Crit-Chance-Knoten rechts wären verschenkt. Links gibt es dafür +30 % Schaden.':'';}
+function treeFam(){const pick=(CUR.sol&&CUR.sol.best.fn)||S.famLock||S.fams[0];return FAM[pick]?pick:'Reeves';}
+function treePlan(){
+  const order=ARCH[S.arch].order,paths=S.tree.paths,plan=[];
+  const fn=treeFam();setFamTree(fn);const bar=new Set(barFor(fn)),done=new Set();
+  const push=(t,seg,i,nd)=>{const id=t+':'+seg+':'+i;if(!done.has(id)){done.add(id);plan.push({t,seg,i,nd});}};
+  // Familien-Baum zuerst: Wurzel, Extra-Slots (7 SP für einen ganzen Perk), Skills der Leiste
+  const FT=TREES.fam;if(FT){push('fam','base',0,FT.base[0]);FT.base.forEach((nd,i)=>{if(nd.k==='slot')push('fam','base',i,nd);});FT.base.forEach((nd,i)=>{if(bar.has(nd.n))push('fam','base',i,nd);});}
+  order.forEach(t=>{const b=TREES[t].base,si=b.findIndex(n=>n.k==='slot');for(let i=0;i<=si;i++)push(t,'base',i,b[i]);});
+  // danach zuerst alles bis zu den Skills der Meta-Leiste, dann den Rest
+  const upTo=(t,lastBase,lastPath)=>{const b=TREES[t].base;for(let i=0;i<=lastBase;i++)push(t,'base',i,b[i]);TREES[t][paths[t]].nodes.forEach((nd,i)=>{if(i<=lastPath)push(t,paths[t],i,nd);});};
+  order.forEach(t=>{const b=TREES[t].base,pn=TREES[t][paths[t]].nodes;
+    const lp=pn.reduce((m,nd,i)=>bar.has(nd.n)?i:m,-1),lb=b.reduce((m,nd,i)=>bar.has(nd.n)?i:m,-1);
+    if(lp>=0)upTo(t,b.length-1,lp);else if(lb>=0)upTo(t,lb,-1);});
+  order.forEach(t=>upTo(t,TREES[t].base.length-1,TREES[t][paths[t]].nodes.length-1));
+  if(FT)FT.base.forEach((nd,i)=>push('fam','base',i,nd));
+  return plan;
+}
+function nodeById(id){if(typeof id!=='string')return null;const [t,seg,i]=id.split(':');const T=TREES[t];if(!T)return null;const arr=seg==='base'?T.base:(T[seg]&&T[seg].nodes);return arr&&arr[+i]?{t,seg,i:+i,nd:arr[+i]}:null;}
+function pathFixed(t){return pathLocked(t)||!!(S.tree.userPath&&S.tree.userPath[t]);}
+function pathLocked(t){return S.tree.mode==='tap'&&S.tree.own.some(id=>id.startsWith(t+':'+S.tree.paths[t]+':'));}
+function allNodes(){const o=[];if(TREES.fam)TREES.fam.base.forEach((nd,i)=>o.push({t:'fam',seg:'base',i,nd}));['sup','off','def'].forEach(t=>{TREES[t].base.forEach((nd,i)=>o.push({t,seg:'base',i,nd}));['L','R'].forEach(sg=>TREES[t][sg].nodes.forEach((nd,i)=>o.push({t,seg:sg,i,nd})));});return o;}
+function treeAlloc(){
+  if(S.tree.mode==='tap')return treeAllocTap();
+  const plan=treePlan(),budget=Math.max(0,+S.tree.budget||0);let used=0,step=0;
+  const blocked={},bought=new Map(),planned=new Map(),stats={},slot={},famSlot={},cap={};
+  plan.forEach(it=>{const id=it.t+':'+it.seg+':'+it.i;if(blocked[it.t])return;if(used+it.nd.sp<=budget){used+=it.nd.sp;bought.set(id,++step);if(it.nd.s)for(const k in it.nd.s)stats[k]=(stats[k]||0)+it.nd.s[k];if(it.nd.k==='cap')cap[it.t]=true;if(it.nd.k==='slot'){if(it.t==='fam')famSlot[it.nd.cat]=(famSlot[it.nd.cat]||0)+1;else slot[it.t]=true;}}else blocked[it.t]=true;});
+  let s2=step;plan.forEach(it=>{const id=it.t+':'+it.seg+':'+it.i;if(!bought.has(id))planned.set(id,++s2);});
+  const cum=new Map();let c=0;plan.forEach(it=>{c+=it.nd.sp;cum.set(it.t+':'+it.seg+':'+it.i,c);});
+  return {plan,bought,planned,cum,used,total:plan.reduce((a,it)=>a+it.nd.sp,0),stats,slot,famSlot,cap,famFn:TREES.fam?TREES.fam.fam:'',budget,nodes:bought.size,tap:false,afford:new Set()};
+}
+function treeAllocTap(){
+  const plan=treePlan(),own=new Set(S.tree.own),free=Math.max(0,+S.tree.free||0);
+  if(TREES.fam)((S.tree.famOwn||{})[TREES.fam.fam]||[]).forEach(i=>own.add('fam:base:'+i));
+  const bought=new Map(),planned=new Map(),stats={},slot={},famSlot={},cap={},cum=new Map(),afford=new Set();let used=0,step=0;
+  allNodes().forEach(it=>{const id=it.t+':'+it.seg+':'+it.i;if(!own.has(id))return;used+=it.nd.sp;bought.set(id,++step);if(it.nd.s)for(const k in it.nd.s)stats[k]=(stats[k]||0)+it.nd.s[k];if(it.nd.k==='cap')cap[it.t]=true;if(it.nd.k==='slot'){if(it.t==='fam')famSlot[it.nd.cat]=(famSlot[it.nd.cat]||0)+1;else slot[it.t]=true;}});
+  let c=0,s2=0,stop=false;plan.forEach(it=>{const id=it.t+':'+it.seg+':'+it.i;if(bought.has(id))return;c+=it.nd.sp;cum.set(id,c);planned.set(id,++s2);if(!stop&&c<=free)afford.add(id);else stop=true;});
+  return {plan,bought,planned,cum,used,total:plan.reduce((a,it)=>a+it.nd.sp,0),stats,slot,famSlot,cap,famFn:TREES.fam?TREES.fam.fam:'',budget:used+free,free,nodes:bought.size,tap:true,afford,rest:c};
+}
+
+/* ================= BUILD-SCORE ================= */
+function makeCtx(noGear){
+  const base={},src=[];
+  const add=(k,v,s)=>{if(!v||!isFinite(v))return;if(k==='odmAll'){ODM5.forEach(x=>add(x,v,s));return;}base[k]=(base[k]||0)+v;src.push([k,s,v]);};
+  const mems=S.mems.slice(0,memSlots()).filter(m=>m&&MEM[m]);
+  mems.forEach(m=>{const M=MEM[m];if(M.s)for(const k in M.s)add(k,M.s[k],'Memory '+m);});
+  if(!noGear)GEARK.forEach(([k,n])=>{const x=CUR.gearD&&CUR.gearD[k];if(x&&x.g!=null&&x.g!==0)add(k,x.g,'ODM-Gear '+n+(S.gear[k].g?' '+GR[S.gear[k].g]:''));});
+  let shiftsAdd=0;
+  S.arts.forEach(a=>{const A=ART[a.a];if(!A)return;for(const k in A.s)add(k,A.s[k],'Artefakt '+A.n);if(A.add)shiftsAdd+=A.add;a.s.forEach(x=>{if(x.k&&+x.v)add(x.k,+x.v,'Substat '+A.n);});});
+  S.talents.slice(0,S.prestige).forEach((t,i)=>{const T=TAL[t];if(T)add(T.k,T.v,'Prestige-Talent '+(i+1));});
+  for(const k in CUR.tree.stats)add(k,CUR.tree.stats[k],'Skill-Baum');
+  if(mems.includes('Quakestrike')&&S.quake>0)add('dmg',1.5*S.quake,'Quakestrike ×'+S.quake);
+  return {base,src,mems,shiftsAdd,arch:S.arch};
+}
+function evalBuild(fn,perks,ctx,detail){
+  const f=FAM[fn],a=ctx.arch,t=Object.assign({},ctx.base),src=detail?ctx.src.slice():null;
+  const add=(k,v,s)=>{if(!v)return;if(k==='odmAll'){for(const x of ODM5){t[x]=(t[x]||0)+v;if(src)src.push([x,s,v]);}return;}t[k]=(t[k]||0)+v;if(src)src.push([k,s,v]);};
+  for(const k in f.s)add(k,f.s[k],'Familie '+f.n);
+  let shiftsMax=1,ccMul=1,cdMul=1,ccCap=null,tyr=null,bf=0,taken=1,noSkills=false,pf=false,util=0;
+  for(const x of perks){const p=x.p,l=x.l;
+    if(!(p.only&&((p.only==='ts')!==(a==='ts'))))for(const k in p.s)add(k,L(p.s[k],l),p.n+' +'+l);
+    const s=p.sp;if(s){if(s.shiftsMax)shiftsMax=Math.max(shiftsMax,s.shiftsMax);if(s.ccMul)ccMul*=L(s.ccMul,l);if(s.cdMul)cdMul*=L(s.cdMul,l);if(s.ccCap)ccCap=ccCap==null?L(s.ccCap,l):Math.min(ccCap,L(s.ccCap,l));if(s.tyrant)tyr=[L(s.tyrant[0],l),L(s.tyrant[1],l)];if(s.bf)bf=L(s.bf,l);if(s.taken)taken*=L(s.taken,l);if(s.noSkills)noSkills=true;}
+    if(p.n==='Perfect Form')pf=true;
+    util+=utv(UT,p.n,a)*(0.7+0.03*l);}
+  if(S.raid&&t.dmgRaid)add('dmg',t.dmgRaid,'Raid-Bonus');
+  if(S.rage&&f.rage){add('odmAll',15,'Rage Mode');add('hp',125,'Rage Mode');add('regenFlat',3,'Rage Mode');}
+  if(f.helos&&S.helos>0){const n=S.helos,s='Undying Hero ×'+n;add('dmg',n,s);add('cd',n,s);add('dr',n,s);add('cc',.6*n,s);}
+  util+=utv(FUT,f.n,a);
+  const T=k=>t[k]||0;
+  let cc=+S.base.cc+T('cc'),cd=+S.base.cd+T('cd'),dmg=T('dmg'),bfAdd=0,tyrAdd=0;
+  if(bf){bfAdd=bf*Math.max(0,(+S.base.spd||0)+T('spd'));cd+=bfAdd;}
+  cc*=ccMul;cd*=cdMul;
+  const ccPreCap=cc;let capCut=0;
+  if(ccCap!=null&&cc>ccCap){capCut=cc-ccCap;cc=ccCap;}
+  if(tyr){const ta=Math.max(0,cc)*tyr[0]/100,tb=Math.max(0,cd)*tyr[1]/100;tyrAdd=ta+tb;dmg+=tyrAdd;cd-=tb;cc=Math.min(cc,10);}
+  const ccRaw=cc,ccE=clamp(cc,0,100),cdE=Math.max(0,cd);
+  const gambler=ctx.mems.includes('Gambler')?1.025:1;
+  const burn=T('burn');
+  const baseCrit=1+S.base.cc/100*S.base.cd/100;
+  let scF=1;ctx.mems.forEach(n=>{const M=MEM[n];if(M&&M.sc)scF*=1+ccE/100*M.sc[0]*M.sc[1]*(1+cdE/100);});
+  const dmgMul=Math.max(.05,(1+dmg/100)*(1+ccE/100*cdE/100)*gambler*scF*(1+burn/100)*(1+T('swing')/400)/baseCrit);
+  const hpTot=Math.max(1,(+S.base.hp+T('hp'))*(1+T('hpPct')/100)),dr=clamp(T('dr'),0,90);
+  const ehp=hpTot/((1-dr/100)*taken);
+  const surv=(ehp/Math.max(1,+S.base.hp))*Math.pow(1+Math.max(0,T('inj'))/100,.3)*(1+.04*Math.min(T('ignInj'),6))*(1+T('regen')/40+T('regenFlat')/80)*(1+.02*T('bandage'));
+  const lp=k=>Math.log(Math.max(.05,1+T(k)/100));
+  const lnM=.4*lp('spd')+.25*lp('ctl')+.2*lp('gas')+.15*lp('rng')+.2*Math.log(1+T('gasKill')/20);
+  const sh=canSh(f),shifts=sh?shiftsMax+ctx.shiftsAdd:0;
+  const lnH=sh?Math.log(Math.max(.05,(1+T('titan')/100)*(1+T('shDmg')/100)))+.3*lp('awk')+.15*Math.log(Math.max(1,shifts)):0;
+  const lnC=noSkills?0:-Math.log(1-Math.min(80,Math.max(0,T('cdr')))/100);
+  const lnB=Math.log(1+Math.max(0,T('dur')+2*T('cons'))/100);
+  const lnE=.5*lp('luck')+.3*lp('gold')+.3*lp('xp');
+  const w=PW[a];
+  let power=w.D*Math.log(dmgMul)+w.S*Math.log(Math.max(.05,surv))+w.M*lnM+w.H*lnH+w.C*lnC+w.B*lnB+w.E*lnE+util;
+  if(noSkills)power-=NSP[a]+((f.rage||f.helos)&&a!=='sup'&&a!=='shift'?.12:0);
+  if(a==='shift'&&!sh)power-=3;
+  return {power,score:100*Math.exp(power),dmgIdx:100*dmgMul,ehp,hpTot,dr,taken,mob:(T('spd')+T('ctl')+T('gas')+T('rng'))/4,shIdx:100*(1+T('titan')/100)*(1+T('shDmg')/100),shifts,cc:ccE,ccRaw,ccPreCap,capCut,cd:cdE,bfAdd,tyrAdd,gambler,noSkills,pf,t,src,f};
+}
+
+/* ================= OPTIMIERER ================= */
+function invCands(){const m={};S.inv.forEach(x=>{if(!m[x.n]||m[x.n].l<x.l)m[x.n]={n:x.n,l:x.l,p:PERK[x.n]};});return Object.values(m);}
+function countsFor(fn){let sl=slotsOf(fn);const tr=CUR.tree.slot;if(FTREE[fn]&&CUR.tree.famFn===fn){const fs=CUR.tree.famSlot||{},o={};CATS.forEach(c=>{o[c]=Math.min(sl[c]||0,fs[c]||0);});sl=o;}return {core:1+(sl.core||0),off:(tr.off?1:0)+(sl.off||0),def:(tr.def?1:0)+(sl.def||0),sup:(tr.sup?1:0)+(sl.sup||0)};}
+function divOK(cd,c,i,full){if(cd.p.r!=='D')return true;if(c==='core')return cd.p.c==='core';if(i!==0)return false;const tr=CUR.tree||{};return full||(!!(tr.slot&&tr.slot[c])&&!!(tr.cap&&tr.cap[c]));}
+const fits=(cd,c,i,full)=>(c==='core'||cd.p.c===c)&&divOK(cd,c,i==null?0:i,full);
+function selList(sel){const o=[];CATS.forEach(c=>sel[c].forEach(x=>{if(x)o.push(x);}));return o;}
+function optimizeFam(fn,cands,ctx,opt){
+  opt=opt||{};const counts=opt.counts||countsFor(fn),sel={},used=new Set();
+  CATS.forEach(c=>sel[c]=Array(counts[c]).fill(null));
+  if(opt.warm)CATS.forEach(c=>(opt.warm[c]||[]).forEach((x,i)=>{if(!x||i>=counts[c])return;const cd=cands.find(y=>y.n===x.n);if(cd&&!used.has(cd.n)&&fits(cd,c,i,opt.full)){sel[c][i]=cd;used.add(cd.n);}}));
+  const ev=()=>evalBuild(fn,selList(sel),ctx).power;
+  let cur=ev();
+  for(;;){let best=null;
+    for(const c of CATS){const i=sel[c].indexOf(null);if(i<0)continue;
+      for(const cd of cands){if(used.has(cd.n)||!fits(cd,c,i,opt.full))continue;sel[c][i]=cd;const p=ev();sel[c][i]=null;if(p>cur+1e-7&&(!best||p>best.p))best={c,i,cd,p};}}
+    if(!best)break;sel[best.c][best.i]=best.cd;used.add(best.cd.n);cur=best.p;}
+  const passes=opt.passes==null?3:opt.passes;
+  for(let pass=0;pass<passes;pass++){let imp=false;
+    for(const c of CATS)for(let i=0;i<sel[c].length;i++){const old=sel[c][i];let bc=old,bp=cur;
+      for(const cd of cands){if(cd===old||used.has(cd.n)||!fits(cd,c,i,opt.full))continue;sel[c][i]=cd;const p=ev();if(p>bp+1e-7){bp=p;bc=cd;}}
+      if(old){sel[c][i]=null;const p=ev();if(p>bp+1e-7){bp=p;bc=null;}}
+      sel[c][i]=bc;if(bc!==old){if(old)used.delete(old.n);if(bc)used.add(bc.n);cur=bp;imp=true;}}
+    // Core hält einen Kategorie-Perk: Kategorie-Perk umsetzen, Core neu besetzen
+    sel.core.forEach((x,ci)=>{if(!x||x.p.c==='core')return;const c=x.p.c;
+      for(let j=0;j<sel[c].length;j++){const occ=sel[c][j];if(!fits(x,c,j,opt.full))continue;
+        for(const cd of cands){if(used.has(cd.n)||!fits(cd,'core',ci,opt.full))continue;sel[c][j]=x;sel.core[ci]=cd;const p=ev();
+          if(p>cur+1e-7){used.add(cd.n);if(occ)used.delete(occ.n);cur=p;imp=true;return;}
+          sel[c][j]=occ;sel.core[ci]=x;}}});
+    if(!imp)break;}
+  return {fn,sel,power:cur,counts};
+}
+function tryInsert(fn,sel,cd,ctx,P0){
+  let best={gain:-Infinity,rep:null,slot:null};
+  CATS.forEach(c=>sel[c].forEach((x,i)=>{if(!fits(cd,c,i))return;const old=sel[c][i];if(old&&old.n===cd.n)return;sel[c][i]=cd;const list=selList(sel).filter((y,k,arr)=>arr.findIndex(z=>z.n===y.n)===k);const p=evalBuild(fn,list,ctx).power;sel[c][i]=old;if(p-P0>best.gain)best={gain:p-P0,rep:old,slot:c};}));
+  return best;
+}
+
+function solve(){
+  CUR.eqFn=(S.famLock&&FAM[S.famLock])?S.famLock:((CUR.sol&&CUR.sol.best&&FAM[CUR.sol.best.fn]&&CUR.sol.best.fn)||S.fams.find(n=>FAM[n])||'Reeves');
+  CUR.gearD=gearDerive(makeCtx(true),CUR.eqFn);
+  const ctx=makeCtx(),cands=invCands();
+  let fams=S.fams.filter(n=>FAM[n]);const noFam=!fams.length;if(noFam)fams=['Reeves'];
+  const results=fams.map(fn=>optimizeFam(fn,cands,ctx)).sort((a,b)=>b.power-a.power);
+  const best=(S.famLock&&results.find(r=>r.fn===S.famLock))||results[0];
+  const m=evalBuild(best.fn,selList(best.sel),ctx,true);
+  return {ctx,cands,results,best,m,noFam};
+}
+
+function analyze(sol){
+  const {ctx,cands,best,m}=sol,fn=best.fn,sel=best.sel,P0=best.power,f=FAM[fn],a=S.arch;
+  const inBuild=new Set(selList(sel).map(x=>x.n));
+  const withLevel=(name,l)=>selList(sel).map(x=>x.n===name?{n:x.n,l,p:x.p}:x);
+  // Upgraden
+  const ups=selList(sel).filter(x=>x.l<10).map(x=>{const p10=evalBuild(fn,withLevel(x.n,10),ctx).power,p1=evalBuild(fn,withLevel(x.n,x.l+1),ctx).power;return {x,g10:pct(p10-P0),g1:pct(p1-P0)};}).sort((u,v)=>v.g10-u.g10);
+  const promote=[],useless=[];
+  cands.filter(c=>!inBuild.has(c.n)).forEach(c=>{
+    const r10=tryInsert(fn,sel,{n:c.n,l:10,p:c.p},ctx,P0);
+    if(r10.gain>0.004){let need=10;for(let lv=c.l;lv<=10;lv++){if(tryInsert(fn,sel,{n:c.n,l:lv,p:c.p},ctx,P0).gain>0.002){need=lv;break;}}promote.push({c,need,g:pct(r10.gain),rep:r10.rep});}
+    else useless.push({c,g10:r10.gain});});
+  promote.sort((u,v)=>v.g-u.g);
+  // Traden: holen
+  const owned=new Set(cands.map(c=>c.n));
+  const want=PERKS.filter(p=>!owned.has(p.n)&&p.r!=='D').map(p=>{const r0=tryInsert(fn,sel,{n:p.n,l:0,p},ctx,P0),r10=tryInsert(fn,sel,{n:p.n,l:10,p},ctx,P0);return {p,g0:pct(r0.gain),g10:pct(r10.gain),rep:r10.rep};}).filter(o=>o.g10>1).sort((u,v)=>v.g10-u.g10).slice(0,6);
+  const famWant=FAMS.filter(F=>!S.fams.includes(F.n)&&TS[F.t]>=TS.B).map(F=>{const r=optimizeFam(F.n,cands,ctx,{passes:1});return {F,g:pct(r.power-P0)};}).filter(o=>o.g>1).sort((u,v)=>v.g-u.g).slice(0,4);
+  // Traden: abgeben
+  const why=c=>{const p=c.p;
+    if(p.s.cc&&p.s.cc[1]>0&&m.ccRaw>=100)return 'Deine Crit-Chance ist schon bei 100 %, mehr bringt nichts.';
+    if(p.g.length===1&&p.g[0]==='shift'&&!canSh(f))return f.sh?`Ohne Titan bringt der Perk nichts. Mit Titan wäre er für ${fn} stark, also nur traden, wenn du nicht auf ein Serum farmst.`:`${fn} kann nicht shiften.`;
+    if(p.g.includes('ts')&&p.g.length===1&&a!=='ts')return 'Nur für Thunder-Spear-Builds.';
+    if(p.sp&&p.sp.ccMul)return 'Mehr als verdoppelt deine Crit-Chance, halbiert aber den Crit-Schaden. Crit-Chance × Crit-Schaden steigt dadurch nur um gut ein Viertel, dafür fehlt dir ein ganzer Perk. Unterm Strich weniger Schaden.';
+    if(p.s.cc&&p.s.cd&&p.s.cd[1]<0)return 'Mehr Crit-Chance, aber weniger Crit-Schaden. Unterm Strich weniger Schaden als ein reiner Schadens-Perk.';
+    return 'Schwächer als deine ausgerüsteten Perks, auch auf +10.';};
+  const hard=c=>(c.p.s.cc&&c.p.s.cc[1]>0&&m.ccRaw>=100)||(c.p.g.length===1&&c.p.g[0]==='shift'&&!canSh(f));
+  const alts=useless.filter(o=>o.g10>-0.05&&!hard(o.c)).map(o=>o.c);
+  const giveP=useless.filter(o=>o.g10<=-0.05||hard(o.c)).map(o=>({c:o.c,why:why(o.c),loss:pct(o.g10)})).sort((u,v)=>RORD[v.c.p.r]-RORD[u.c.p.r]);
+  const cnt={};S.inv.forEach(x=>{(cnt[x.n]=cnt[x.n]||[]).push(x.l);});
+  const dups=Object.entries(cnt).filter(([n,ls])=>ls.length>1).map(([n,ls])=>({n,extra:ls.sort((x,y)=>y-x).slice(1)}));
+  const giveF=sol.results.filter(r=>r.fn!==fn&&!sol.noFam).map(r=>{const F=FAM[r.fn];const other=Object.keys(ARCH).filter(k=>k!==a&&ARCH[k].fams.includes(r.fn)).map(k=>ARCH[k].n);return {F,g:pct(r.power-P0),other};});
+  // To-do
+  const todo=[];
+  if(sol.noFam)todo.push({p:'hi',t:'Familien eintragen',b:'Ohne Familie rechnet der Algo mit einer Common-Familie ohne Boni. Trag alle Familien ein, die du besitzt.'});
+  if(!S.inv.length)todo.push({p:'hi',t:'Perks eintragen',b:'Trag deine Perks mit Level ein, dann baut der Algo dein Loadout.'});
+  const miss=['off','def','sup'].filter(t=>!CUR.tree.slot[t]);
+  if(miss.length)todo.push({p:'hi',t:`${miss.map(t=>CAT[t]).join(', ')}-Slot freischalten`,b:`Jeder Skill-Baum hat einen Perk-Slot-Knoten für 5 SP. Im Tab Skill-Baum antippen, was du schon hast; der Plan holt die Slots zuerst.`});
+  const n=memSlots();
+  if(n){const wantM=idealMems(fn,n),have=S.mems.slice(0,n);const filled=have.filter(Boolean).length;
+    if(filled<n)todo.push({p:'hi',t:'Memory-Slots füllen',b:`${n-filled} von ${n} Slots sind leer. Mit Prestige Scrolls rollen; nach 20 Scrolls ist ein 3★+ garantiert. Ziel: ${wantM.filter(x=>!have.includes(x)).slice(0,3).join(', ')}.`});
+    const weak=have.filter(x=>x&&!wantM.includes(x)&&memScore(MEM[x],a,f)<TS.A*.85);
+    if(weak.length)todo.push({p:'mid',t:'Memories rerollen',b:`${weak.join(', ')} ${weak.length>1?'sind':'ist'} für ${ARCH[a].n} schwach. Ziel: ${wantM.filter(x=>!have.includes(x)).slice(0,3).join(', ')}. Lazurite- und Amethyst-Tickets erhöhen die Chance auf seltene Memories.`});}
+  if(S.prestige<5){const nx=PRE[S.prestige+1];if(S.level>=nx.need)todo.push({p:'hi',t:`Prestige ${S.prestige+1} ist möglich`,b:`Vorher die Checkliste im Prestige-Tab durchgehen. Talent-Tipp: ${talentAdvice(fn).n}.`});}
+  if(!sol.noFam&&['B','C','D'].includes(f.t))todo.push({p:'mid',t:'Bessere Familie besorgen',b:`${fn} ist Tier ${f.t}. Für ${ARCH[a].n} lohnen sich ${ARCH[a].fams.slice(0,4).join(', ')}. Spins gibt es über Codes, Login und Market.`});
+  if(a==='shift'&&!S.titan)todo.push({p:'hi',t:'Kein Titan',b:'Ohne Titan-Serum kannst du nicht shiften. Wähl oben einen anderen Spielstil (ODM-Klingen passt fast immer) oder stell „Titan“ auf „Hab einen“, sobald das Serum gedroppt ist.'});
+  else if(a==='shift'&&!f.sh)todo.push({p:'hi',t:'Keine Shifter-Familie',b:'Keine deiner Familien kann shiften. Trag eine Shifter-Familie ein oder wähle einen anderen Spielstil.'});
+  if(f.sh&&!S.titan&&a!=='shift')todo.push({p:'info',t:'Titan-Serum farmen',b:`Das Serum droppt sehr selten bei Bossen auf Aberrant. Bis dahin zählen von ${fn} nur die Werte; Titan-Stats und Shift-Perks rechnet der Algo mit 0.`});
+  if(m.noSkills)todo.push({p:'mid',t:'Heavenly Restriction schaltet deine Skills ab',b:`Das hat der Algo eingerechnet. Ohne Skills fehlen dir ${f.rage?'Rage Mode und deine Familien-Skills':'deine Skills'} und Skill-Memories wie Assassin.`});
+  if(m.capCut>0)todo.push({p:'mid',t:'Flame Rhapsody deckelt deine Crit-Chance',b:`${nf1.format(m.capCut)} % Crit-Chance verfallen.`});
+  if(m.taken>1)todo.push({p:'info',t:'Adaptation erhöht erst deinen Schaden-Taken',b:'Bis die Immunität steht, nimmst du mehr Schaden. Im Überleben-Wert eingerechnet.'});
+  if(false)todo.push({p:'info',t:'',b:'Zusammen verschieben sie das Schadensfenster auf 85–140 %. Lohnt sich als Memory-Ziel.'});
+  {const capMiss=['off','def','sup'].filter(t=>!(CUR.tree.cap&&CUR.tree.cap[t]));
+   const divIn=selList(sel).filter(x=>x.p.r==='D').length;
+   const divOwn=S.inv.filter(x=>PERK[x.n]&&PERK[x.n].r==='D'&&PERK[x.n].c!=='core');
+   divOwn.forEach(x=>{const c=PERK[x.n].c;if(capMiss.includes(c))todo.push({p:'hi',t:`Capstone im ${CAT[c]}-Baum für ${x.n}`,b:`Divine-Perks im ${CAT[c]}-Slot brauchen seit Update 5 den Capstone am Ende des Pfads (20 SP). Familien-Extra-Slots können keine Divine-Perks tragen.`});});
+   if(S.prestige>=3&&!S.inv.some(x=>PERK[x.n]&&PERK[x.n].r==='D')){const best=PERKS.filter(p=>p.r==='D').map(p=>({p,g:pct(tryInsert(fn,sel,{n:p.n,l:0,p},ctx,P0).gain)})).filter(o=>isFinite(o.g)&&o.g>0).sort((u,v)=>v.g-u.g)[0];
+     todo.push({p:'mid',t:'Divine-Perks auf Freedom farmen',b:`Freedom braucht Prestige 3 und Ø Gear-Stufe S-. Dort droppen Divine-Fragmente; 3 Fragmente + 5 Mio. Gold = sicherer Craft.${best?` Für dich am stärksten: ${best.p.n} (${fmtGain(best.g)} schon auf +0).`:' Body-Divines (Mankind\'s Strongest) gehen ohne Capstone.'}`});}
+   if(capMiss.length<3&&false)void 0;}
+  todo.push({p:'info',t:'ODM-Gear upgraden',b:`${gearNext()?'Als Nächstes: '+gearNextTxt()+'. ':''}Reihenfolge für ${ARCH[a].n}: ${gearPrio().map(gearName).join(' → ')}. Wird beim Prestige zurückgesetzt, also kurz vorher nicht mehr reinbuttern.`});
+  const ord={hi:0,mid:1,info:2};todo.sort((u,v)=>ord[u.p]-ord[v.p]);
+  const famDups=sol.noFam?[]:S.fams.filter(n=>famCnt(n)>1).map(n=>({F:FAM[n],n:famCnt(n),best:n===fn}));
+  const feed=[],keepTrade=[];
+  giveP.forEach(o=>{const p=o.c.p;if(p.r==='D')return;const shiftKeep=p.g.length===1&&p.g[0]==='shift'&&f.sh&&!S.titan;
+    (shiftKeep||p.r==='M'||p.r==='L'||p.r==='S'?keepTrade:feed).push({n:o.c.n,l:o.c.l,p,why:o.why,loss:o.loss,shiftKeep});});
+  dups.forEach(d=>{const p=PERK[d.n];if(!p||p.r==='D')return;d.extra.forEach(l=>{(p.r==='M'||p.r==='L'?keepTrade:feed).push({n:d.n,l,p,why:'Doppelt: nur eine Kopie kann ausgerüstet sein.',dup:true});});});
+  return {ups,promote,want,famWant,giveP,alts,dups,famDups,giveF,todo,feed,keepTrade};
+}
+function memFit(M,a,f){if(M.leg&&M.y!=='core'&&!(CUR.tree&&CUR.tree.cap&&CUR.tree.cap[M.y]))return 0;let w=0;M.g.forEach(t=>{const v=W[a][t];w=Math.max(w,v==null?.5:v);});if(M.n==='Apotheosis'&&!canSh(f)&&!f.rage&&!f.helos)return 0;if(M.n==='Stormcharged'&&a!=='shift')w*=.5;return w;}
+const memScore=(M,a,f)=>TS[M.t]*memFit(M,a,f);
+function idealMems(fn,n){const f=FAM[fn],x=FAMX[fn]&&FAMX[fn][S.arch];let list=((x&&x.mems)||ARCH[S.arch].mems).filter(m=>MEM[m]&&memFit(MEM[m],S.arch,f)>0);const legs=MEMS.filter(m=>m.leg&&memFit(m,S.arch,f)>0&&memScore(m,S.arch,f)>=TS.S*.8).sort((u,v)=>memScore(v,S.arch,f)-memScore(u,S.arch,f)).map(m=>m.n);list=legs.concat(list.filter(m=>!legs.includes(m)));const rest=MEMS.filter(m=>!list.includes(m.n)).map(m=>({n:m.n,sc:memScore(m,S.arch,f)})).filter(o=>o.sc>0).sort((u,v)=>v.sc-u.sc).map(o=>o.n);return list.concat(rest).slice(0,n);}
+function talentAdvice(fn){const f=FAM[fn];if(!f||['B','C','D'].includes(f.t))return {n:'Luck (+7,5 %), solange du noch nach einer besseren Familie spinnst'};if(S.prestige<4)return {n:'EXP (+15 %), damit du schneller zum nächsten Prestige kommst'};return {n:'Luck (+7,5 %) für Mythic-Drops und Spins'};}
+function tradeVal(kind,x){
+  if(kind==='perk'){if(x.r==='D')return 'craftbar aus Divine-Fragmenten';const v=x.r==='M'?'hoch':x.r==='L'?'mittel':x.r==='E'?'gering':'Fodder';return v+(DEMAND[x.n]?', '+DEMAND[x.n]:'');}
+  if(x.r==='S')return 'nicht handelbar';
+  const v=x.r==='M'?'sehr hoch':x.r==='L'?'hoch':x.r==='E'?'mittel':'kaum';return v+(DEMAND[x.n]?', '+DEMAND[x.n]:'');
+}
+
+/* ================= RENDER ================= */
+const $=id=>document.getElementById(id);
+function view(){const h=(location.hash||'').replace('#','');if(h==='loadout'||h==='empfehlungen')return 'build';return ['build','baum','prestige','datenbank'].includes(h)?h:'build';}
+function touch(){S.example=false;}
+
+function renderAll(){
+  S.level=clamp(+S.level||1,1,capLvl());
+  if(S.tree.mode==='tap'){const rp=recPaths(treeFam());['sup','off','def'].forEach(t=>{if(!pathFixed(t))S.tree.paths[t]=rp[t];});}
+  CUR.tree=treeAlloc();const tf=treeFam();
+  CUR.sol=solve();
+  if(CUR.sol.best.fn!==tf){CUR.tree=treeAlloc();CUR.sol=solve();}
+  const v=view();
+  document.querySelectorAll('#tabs a').forEach(a=>{if(a.dataset.tab===v)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+  document.querySelectorAll('.view').forEach(s=>{s.hidden=s.id!=='view-'+v;});
+  renderNote();
+  if(v==='build'){CUR.an=analyze(CUR.sol);renderSetup();renderGlance();renderInputs();renderResult();const ht=document.querySelector('#view-build .howto');if(ht)ht.hidden=!!(S.inv.length&&S.fams.length);if(UI.scrollRes){UI.scrollRes=false;const r=$('result');if(r&&r.scrollIntoView)r.scrollIntoView({behavior:'smooth',block:'start'});}}
+  else if(v==='baum')renderTree();
+  else if(v==='prestige')renderPrestige();
+  else renderDb();
+  if(!$('codePanel').hidden)$('codeOut').value=encode();
+  save();
+}
+function renderNote(){
+  $('exampleNote').innerHTML=S.example?`<div class="note"><span><b>Beispiel-Build:</b> 3 Familien und 18 Perks zum Ausprobieren. Ersetze sie durch deine eigenen, dann rechnet alles mit deinen Daten.</span><button class="btn sm" data-act="blank">Leer starten</button></div>`:'';
+  $('blankBtn').textContent=UI.confirmBlank?'Wirklich alles leeren?':'Neues Build';
+}
+function renderSetup(){
+  const pre=PRE.map(p=>`<button data-act="prestige" data-v="${p.p}" aria-pressed="${S.prestige===p.p}" title="${esc(p.rank)}">${p.p?'★'+p.p:'0'}</button>`).join('');
+  const arch=Object.entries(ARCH).map(([k,x])=>`<button data-act="arch" data-v="${k}" aria-pressed="${S.arch===k}" title="${esc(x.d+(k==='shift'&&!S.titan?' · braucht einen Titan':''))}"${k==='shift'&&!S.titan?' class="dim"':''}>${x.n}</button>`).join('');
+  $('setup').innerHTML=`
+   <div class="fld"><span class="lbl" id="archLbl">Spielstil</span><div class="seg" role="group" aria-labelledby="archLbl">${arch}</div></div>
+   <div class="fld"><span class="lbl" id="titLbl">Titan</span><div class="seg" role="group" aria-labelledby="titLbl"><button data-act="titan" data-v="0" aria-pressed="${!S.titan}" title="Noch kein Titan-Serum">Kein Titan</button><button data-act="titan" data-v="1" aria-pressed="${S.titan}" title="Titan-Serum eingelöst">Hab einen</button></div></div>
+   <div class="fld"><span class="lbl" id="preLbl">Prestige</span><div class="seg" role="group" aria-labelledby="preLbl">${pre}</div></div>
+   <div class="fld"><label class="lbl" for="lvlIn">Level (max. ${capLvl()})</label><input id="lvlIn" type="number" min="1" max="${capLvl()}" value="${S.level}" data-ch="level"></div>
+   <a class="jump" href="#result">Zum Ergebnis ↓</a>`;
+}
+function perkSummary(p,l){const parts=[];for(const k in p.s){if(k==='odmAll'){parts.push('alle ODM-Stats '+sgn(L(p.s[k],l))+' %');continue;}parts.push(STATS[k].n+' '+fmtStat(k,L(p.s[k],l)));}const s=p.sp||{};if(s.bf)parts.push('+'+nf1.format(L(s.bf,l))+' % Crit-Schaden je 1 % Speed');if(s.shiftsMax)parts.push(s.shiftsMax+' Shifts');if(s.ccMul)parts.push('Crit-Chance ×'+nf1.format(L(s.ccMul,l)));if(s.cdMul&&!s.ccMul)parts.push('Crit-Schaden ×'+nf1.format(L(s.cdMul,l)));if(s.tyrant)parts.push(nf1.format(L(s.tyrant[0],l))+' % Crit-Chance → Schaden');return parts.slice(0,3).join(', ')||p.x;}
+
+function renderInputs(){
+  const sol=CUR.sol,best=sol.best,inB=new Set(selList(best.sel).map(x=>x.n));
+  // Familien
+  const famOpts=['S','M','L','E','R','C'].map(r=>`<optgroup label="${RAR[r]}">`+FAMS.filter(x=>x.r===r).map(x=>`<option value="${esc(x.n)}"${x.n===UI.lastFam?' selected':''}>${esc(x.n)} · Tier ${x.t}${S.fams.includes(x.n)?' · hast du ×'+famCnt(x.n):''}</option>`).join('')+'</optgroup>').join('');
+  const fchips=S.fams.map(n=>{const F=FAM[n];return `<span class="fchip ${n===best.fn&&!sol.noFam?'best':''}"><span class="dot" style="--rc:var(--r-${F.r})"></span>${famCnt(n)>1?`<b class="fcnt">${famCnt(n)}×</b>`:''}${esc(n)} ${tierB(F.t)}${slotTxt(slotsOf(n))?`<small class="fsl">${slotTxt(slotsOf(n))}</small>`:''}${famCnt(n)>1?`<button class="x" data-act="famDec" data-v="${esc(n)}" aria-label="Eine Kopie ${esc(n)} weniger" title="Eine Kopie weniger">−</button>`:''}<button class="x" data-act="rmFam" data-v="${esc(n)}" aria-label="${esc(n)} entfernen">×</button></span>`;}).join('')||'<span class="empty">Noch keine Familie eingetragen.</span>';
+  // Perks
+  const addOpts=CATS.map(c=>`<optgroup label="${CAT[c]}">`+PERKS.filter(p=>p.c===c).sort((a,b)=>a.n.localeCompare(b.n)).map(p=>`<option value="${esc(p.n)}"${p.n===UI.lastAdd?' selected':''}>${esc(p.n)} · ${RAR[p.r]}</option>`).join('')+'</optgroup>').join('');
+  const lvlOpts=Array.from({length:11},(_,i)=>`<option value="${i}">+${i}</option>`).join('');
+  const inv=S.inv.map((x,i)=>({...x,i,p:PERK[x.n]})).sort((a,b)=>CATORD[a.p.c]-CATORD[b.p.c]||RORD[b.p.r]-RORD[a.p.r]||a.n.localeCompare(b.n)||b.l-a.l);
+  const usedNames=new Set();let rows='',lastCat='';
+  inv.forEach(x=>{if(x.p.c!==lastCat){lastCat=x.p.c;rows+=`<li class="catlbl">${CAT[lastCat]}</li>`;}
+    const isIn=inB.has(x.n)&&!usedNames.has(x.n);if(isIn)usedNames.add(x.n);
+    rows+=`<li class="inv-row"><span class="dot" style="--rc:var(--r-${x.p.r})" title="${RAR[x.p.r]}"></span>
+     <div class="inv-name"><b>${esc(x.n)}</b>${isIn?'<span class="tag in">im Build</span>':''}<button class="tag eq" data-act="equip" data-i="${x.i}" aria-pressed="${!!x.on}" title="Trägst du den Perk gerade im Spiel?">${x.on?'im Spiel an':'im Spiel aus'}</button>${uncM(x.p.u)}<small>${esc(perkSummary(x.p,x.l))}</small></div>
+     <div class="stepper"><button data-act="lvl" data-i="${x.i}" data-d="-1" aria-label="${esc(x.n)} Level senken">−</button><output>+${x.l}</output><button data-act="lvl" data-i="${x.i}" data-d="1" aria-label="${esc(x.n)} Level erhöhen">+</button></div>
+     <button class="x" data-act="rm" data-i="${x.i}" aria-label="${esc(x.n)} entfernen">×</button></li>`;});
+  if(!inv.length)rows='<li class="empty">Noch keine Perks. Perk und Level wählen, dann „Hinzufügen“.</li>';
+  // Memories
+  const n=memSlots();let mem='';
+  if(!n)mem='<p class="help" style="margin:0">Memories gibt es ab Prestige 1.</p>';
+  else{mem='<div class="grid-sel">';for(let i=0;i<n;i++){const cur=S.mems[i]||'',taken=new Set(S.mems.slice(0,n).filter((m,j)=>m&&j!==i));
+    const opts=['off','def','sup','core'].map(t=>`<optgroup label="${MTYPE[t]}">`+MEMS.filter(m=>m.y===t&&!taken.has(m.n)).map(m=>`<option value="${esc(m.n)}"${m.n===cur?' selected':''}>${esc(m.n)}${m.leg?' · Legendär':(m.st?' · '+m.st+'★':'')}</option>`).join('')+'</optgroup>').join('');
+    mem+=`<div class="box"><label class="lbl" for="mem-${i}">Memory ${i+1}</label><select id="mem-${i}" data-ch="mem" data-i="${i}"><option value="">— leer —</option>${opts}</select></div>`;}mem+='</div>';}
+  // Mehr Angaben
+  const f=FAM[best.fn];
+  const arts=S.arts.map((x,i)=>{const A=ART[x.a];return `<div class="box"><label class="lbl" for="art-${i}">Artefakt ${i+1}</label>
+    <select id="art-${i}" data-ch="art" data-i="${i}"><option value="">— keins —</option>${ARTS.map(y=>`<option value="${esc(y.n)}"${y.n===x.a?' selected':''}>${esc(y.n)}</option>`).join('')}</select>
+    ${A?`<small>${esc(A.x)}${uncM(A.u)}</small>`:''}
+    ${x.s.map((s,j)=>`<div class="sub"><select id="artk-${i}-${j}" data-ch="artk" data-i="${i}" data-j="${j}" aria-label="Substat ${j+1}"><option value="">Substat ${j+1}</option>${SUBK.map(k=>`<option value="${k}"${k===s.k?' selected':''}>${STATS[k].n}</option>`).join('')}</select><input id="artv-${i}-${j}" type="number" step="0.5" value="${+s.v||0}" data-ch="artv" data-i="${i}" data-j="${j}" aria-label="Wert"></div>`).join('')}</div>`;}).join('');
+  let tal='';for(let i=0;i<S.prestige;i++){const v=S.talents[i]||'';tal+=`<div class="box"><label class="lbl" for="tal-${i}">Prestige ${i+1}</label><select id="tal-${i}" data-ch="tal" data-i="${i}"><option value="">— nicht gewählt —</option>${Object.entries(TAL).map(([k,t])=>`<option value="${k}"${k===v?' selected':''}>${t.n}</option>`).join('')}</select></div>`;}
+  const openMore=UI.moreOpen?' open':'';
+  $('inputs').innerHTML=`
+   <section class="card"><div class="card-h"><div class="stephead"><b>1</b><h2>Deine Familien</h2></div><small>${famTotal()} eingetragen</small></div>
+    <p class="help">Alle Familien, die du besitzt. Der Algo probiert jede aus und nimmt die beste für deinen Spielstil. Hast du eine Familie mehrfach, füg sie einfach nochmal hinzu; die Kopien landen unter Traden.</p>
+    <div class="famchips">${fchips}</div>
+    <div class="addrow"><select id="addFam" aria-label="Familie wählen">${famOpts}</select><button class="btn pri" data-act="addFam">Hinzufügen</button></div>
+    ${S.fams.length?`<details class="dd slotdd" id="slotBox"${UI.slotOpen?' open':''}><summary>Extra-Perk-Slots der Familien (${S.fams.filter(n=>slotTxt(slotsOf(n))).length} mit Extra-Slots)</summary><div class="ddb">
+     <p class="help">Diese Slots kommen von der Familie, zusätzlich zu den Slots aus dem Skill-Baum. Der Algo füllt sie automatisch mit. Bei manchen Familien sind sich die Quellen nicht einig, zum Beispiel bei Fritz. Schau im Spiel nach, wie viele Slots du mit der Familie hast, und stell es hier ein.</p>
+     <table class="sltab"><thead><tr><th>Familie</th>${CATS.map(c=>`<th>${CAT[c]}</th>`).join('')}<th></th></tr></thead><tbody>${S.fams.map(n=>{const sl=slotsOf(n),own=!!(S.slots&&S.slots[n]);return `<tr><th scope="row">${esc(n)}${uncM(FAM[n].u&&/Slot/.test(FAM[n].u)?FAM[n].u:'')}</th>${CATS.map(c=>`<td><select data-ch="fslot" data-f="${esc(n)}" data-c="${c}" aria-label="${esc(n)} Extra-${CAT[c]}-Slots">${[0,1,2].map(v=>`<option value="${v}"${(sl[c]||0)===v?' selected':''}>+${v}</option>`).join('')}</select></td>`).join('')}<td>${own?`<button class="btn sm" data-act="slotReset" data-v="${esc(n)}">Standard</button>`:'<small class="muted">Standard</small>'}</td></tr>`;}).join('')}</tbody></table></div></details>`:''}</section>
+   <section class="card"><div class="card-h"><div class="stephead"><b>2</b><h2>Deine Perks</h2></div><small>${S.inv.length} Stück · Level +0 bis +10</small></div>
+    <p class="help">Auch Perks, die du gerade nicht nutzt. Doppelte trägst du einfach zweimal ein.</p>
+    <div class="addrow"><select id="addPerk" aria-label="Perk wählen">${addOpts}</select><select id="addLvl" aria-label="Level">${lvlOpts}</select><button class="btn pri" data-act="add">Hinzufügen</button></div>
+    <ul class="inv">${rows}</ul>
+    ${S.inv.length?'<div style="margin-top:10px"><button class="btn sm" data-act="clearInv">Alle Perks entfernen</button></div>':''}</section>
+   <section class="card"><div class="card-h"><div class="stephead"><b>3</b><h2>Deine Memories</h2></div><small>${n} Slot${n===1?'':'s'} auf Prestige ${S.prestige}</small></div>${mem}</section>
+   <details class="card more" id="gearBox"${UI.gearOpen?' open':''}><summary>ODM-Gear (optional) · Ø Stufe ${gearAvg()}</summary><div class="more-body">
+    <p class="help" style="margin:0">Musst du nicht ausfüllen. Gear upgradest du sowieso, und an den Perk- und Skill-Empfehlungen ändert es kaum etwas. Nützlich sind nur zwei Sachen: Mit der Stufe zeigt dir der Rechner, welches Upgrade als Nächstes dran ist und was es kostet. Und deine Crit-Werte aus dem Spiel machen die Crit-Rechnung genauer, etwa ob du schon nah an 100 % bist.</p>
+    ${(()=>{const any=['cc','cd'].some(k=>S.gear[k].w!==''),eq=S.inv.filter(x=>x.on).length;return any?`<p class="${eq?'help':'warnline'}" style="margin:6px 0">Wichtig: In der Perk-Liste genau die Perks auf „im Spiel an“ stellen, die du beim Ablesen getragen hast. Nur dann kann der Rechner sie wieder herausrechnen.${eq?'':' <button class="btn sm" data-act="equipBest">Ich trage genau das empfohlene Build</button>'}</p>`:'';})()}
+    <table class="geartab"><thead><tr><th>Stat</th><th>Stufe</th><th>Im Spiel</th><th>Grund + Gear</th></tr></thead><tbody>${(()=>{const nx=gearNext();return gearPrio().map(k=>{const x=S.gear[k],dv=CUR.gearD&&CUR.gearD[k],crit=k==='cc'||k==='cd';return `<tr${nx&&nx.k===k?' class="nx"':''}><th scope="row">${gearName(k)}<small>${x.g<15?'nächste: '+nf0.format(GCOST[x.g])+' G':(x.g===15?'A+':'S-')}</small></th><td><select data-ch="gearG" data-k="${k}" aria-label="${gearName(k)} Stufe">${GR.map((g,i)=>`<option value="${i}"${x.g===i?' selected':''}>${g}</option>`).join('')}</select></td><td>${crit?`<input type="number" step="0.1" data-ch="gearW" data-k="${k}" value="${x.w}" placeholder="%" aria-label="${gearName(k)} in Prozent, wie im Spiel angezeigt">`:'<span class="muted">–</span>'}</td><td class="num">${crit&&dv?(dv.bad?`<span class="neg" title="Mit den Perks, die als „im Spiel an“ markiert sind, kommt der Rechner schon über deinen Wert. Markier genau die Perks, die du gerade im Spiel trägst.">passt nicht</span>`:(dv.g==null?'?':`<span title="Grundwert inklusive Gear, aus deinem Wert im Spiel zurückgerechnet (vorher geschätzt: ${nf1.format(+S.base[k])} %)">${nf1.format(dv.eff)} %</span>`)):'–'}</td></tr>`;}).join('');})()}</tbody></table>
+    ${gearNext()?`<p class="nextup"><b>Als Nächstes:</b> ${esc(gearNextTxt())}. Bis alles auf A+: ${nf0.format(gearLeft())} Gold.</p>`:'<p class="nextup"><b>Alles auf A+.</b> Die letzte Stufe ist S-; Ø S- schaltet Freedom frei.</p>'}
+    <small class="muted">Reihenfolge für ${esc(ARCH[S.arch].n)}: ${gearPrio().map(gearName).join(' → ')}. Gear wird beim Prestige zurückgesetzt. Für die neue Freedom-Schwierigkeit (Divine-Fragmente) brauchst du Prestige 3 und Ø Stufe S-.</small></div></details>
+   <details class="card more"${openMore} id="moreBox"><summary>Mehr Angaben (optional)</summary><div class="more-body">
+    ${CUR.tree.tap?`<div class="fld"><span class="lbl">Skill-Baum</span><p>${CUR.tree.nodes} Knoten angetippt (${CUR.tree.used} SP). <a href="#baum">Im Skill-Baum antippen, was du hast</a></p></div>`:`<div class="fld"><label class="lbl" for="spIn">Skill-Punkte</label><div class="rowgap"><input id="spIn" type="number" min="0" value="${S.tree.budget}" data-ch="budget"><button class="btn sm" data-act="treeMax">Alle (${CUR.tree.total})</button></div><small>Schaltet Perk-Slots und Baum-Boni frei. Genauer: im Tab Skill-Baum antippen, was du hast.</small></div>`}
+    <div><span class="lbl">Artefakte</span><div class="grid-sel" style="margin-top:6px">${arts}</div></div>
+    ${S.prestige?`<div><span class="lbl">Prestige-Talente</span><div class="grid-sel" style="margin-top:6px">${tal}</div></div>`:''}
+    <div class="fld"><span class="lbl">Kampflage</span>
+     <label class="sw"><input type="checkbox" id="raidSw" data-ch="raid" ${S.raid?'checked':''}> Im Raid (Raid-Schaden zählt mit)</label>
+     ${S.fams.some(x=>FAM[x].rage)?`<label class="sw"><input type="checkbox" id="rageSw" data-ch="rage" ${S.rage?'checked':''}> Rage Mode aktiv (Ackerman/Shiki)</label>`:''}
+     ${S.fams.includes('Helos')?`<div class="rng"><label for="helosR">Undying Hero</label><input type="range" id="helosR" min="0" max="20" value="${S.helos}" data-ch="helos" data-out="helosO"><output id="helosO">${S.helos}</output></div>`:''}
+     ${S.mems.slice(0,n).includes('Quakestrike')?`<div class="rng"><label for="quakeR">Quakestrike</label><input type="range" id="quakeR" min="0" max="50" value="${S.quake}" data-ch="quake" data-out="quakeO"><output id="quakeO">${S.quake}</output></div>`:''}</div>
+    <div class="fld"><span class="lbl">Basiswerte ohne Boni</span><small>Zeigt dein Details-Tab eine andere Crit-Chance als hier? Basiswert anpassen, bis es passt.</small>
+     <div class="rowgap"><label class="fld"><span class="lbl">Crit-Chance %</span><input id="bcc" type="number" step="0.5" value="${S.base.cc}" data-ch="base" data-k="cc"></label><label class="fld"><span class="lbl">Crit-Schaden %</span><input id="bcd" type="number" step="5" value="${S.base.cd}" data-ch="base" data-k="cd"></label><label class="fld"><span class="lbl">HP</span><input id="bhp" type="number" step="5" value="${S.base.hp}" data-ch="base" data-k="hp"></label><label class="fld"><span class="lbl">ODM-Speed % (ohne Gear)</span><input id="bspd" type="number" step="5" value="${S.base.spd}" data-ch="base" data-k="spd"></label></div><small>ODM-Speed brauchst du für Black Flash: Er gibt Crit-Schaden pro 1 % Speed. Grundwert ohne Perks und ohne Gear; den Gear-Bonus trägst du oben bei „Dein ODM-Gear“ ein.</small></div>
+   </div></details>`;
+}
+
+const eqPerks=()=>S.inv.filter(x=>x.on&&PERK[x.n]).map(x=>({n:x.n,l:x.l,p:PERK[x.n]}));
+function gearDerive(ctx0,fn){
+  const out={};if(!['cc','cd'].some(k=>S.gear[k].w!==''))return out;
+  const m=evalBuild(fn,eqPerks(),ctx0,true),t=m.t;
+  ['cc','cd'].forEach(k=>{const w=S.gear[k].w;if(w==='')return;let model,g,b100=false;
+    if(k==='cc'){const pre=(+S.base.cc)+(t.cc||0),mul=pre>0?m.ccPreCap/pre:1;model=m.ccRaw;g=(m.tyrAdd>0||m.capCut>0)?null:w/(mul||1)-pre;}
+    else if(k==='cd'){const pre=(+S.base.cd)+(t.cd||0)+m.bfAdd,mul=pre>0?m.cd/pre:1;model=m.cd;g=m.tyrAdd>0?null:w/(mul||1)-pre;}
+    else if(k==='spd'){model=(+S.base.spd)+(t.spd||0);g=w-model;}
+    else{model=t[k]||0;g=w-model;if(g>=90){g-=100;b100=true;model+=100;}}
+    const eff=g==null?null:(+S.base[k])+g;
+    out[k]={model,g:g==null||eff<0?null:Math.round(g*10)/10,eff,bad:eff!=null&&eff<0};});
+  return out;
+}
+function gearPrio(){const n2k=Object.fromEntries(GEARK.map(([k,n])=>[n,k]));const o=ARCH[S.arch].upg.map(n=>n2k[n]).filter(Boolean);GEARK.forEach(([k])=>{if(!o.includes(k))o.push(k);});return o;}
+function gearNext(){const pr=gearPrio();let best=null;pr.forEach((k,r)=>{const g=S.gear[k].g;if(g>=15)return;const sc=g+2*r;if(!best||sc<best.sc)best={k,g,sc,cost:GCOST[g]};});return best;}
+function gearLeft(){return GEARK.reduce((a,[k])=>{let s2=0;for(let g=S.gear[k].g;g<15;g++)s2+=GCOST[g];return a+s2;},0);}
+function gearAvg(){const v=GEARK.reduce((a,[k])=>a+S.gear[k].g,0)/GEARK.length;return v?GR[Math.max(1,Math.round(v))]:'–';}
+const gearName=k=>GEARK.find(x=>x[0]===k)[1];
+function gearNextTxt(){const nx=gearNext();return nx?`${gearName(nx.k)} ${GR[nx.g]}${nx.g?'':' (noch nicht gelevelt)'} → ${GR[nx.g+1]} für ${nf0.format(nx.cost)} Gold`:'';}
+const TRADE_LINKS=[['AoTR Trading & LFG (Discord, größter Trading-Server)','https://discord.gg/aotrhub'],['Attack on Titan Revolution Community (Discord)','https://discord.gg/attackontitanrevolution'],['game.guide: Trade-Calculator, Werte und Trading Hub','https://www.game.guide/attack-on-titan-revolution-trade-calculator']];
+const tradeLinksHtml=()=>`<div class="tlinks"><b>Wo du Trade-Partner findest</b><ul>${TRADE_LINKS.map(([n,u])=>`<li><a href="${u}" target="_blank" rel="noopener">${esc(n)}</a></li>`).join('')}</ul><small>Fair-Check: Angebot in den game.guide-Calculator eintragen. Sicher bleiben: nur über das Trade-Fenster im Spiel tauschen, nie „zuerst geben“, keine Links oder Logins von Fremden öffnen. Die Server sind Community-Server, nicht vom Entwickler bestätigt.</small></div>`;
+function renderGlance(){
+  const sol=CUR.sol,an=CUR.an,best=sol.best,fn=best.fn,A=ARCH[S.arch],tr=CUR.tree;
+  if(!S.inv.length&&!S.fams.length){$('glance').hidden=true;return;}$('glance').hidden=false;
+  const rows=[];const row=(v,title,sub,btn)=>rows.push(`<li class="gi"><span class="gv">${v}</span><b>${title}</b>${sub?`<small>${sub}</small>`:''}${btn||''}</li>`);
+  const det=(t,l)=>`<button class="lnk" data-act="tabAct" data-v="${t}" data-scroll="1">${l||'Details'} →</button>`;
+  // Ausrüsten
+  const bestL=selList(best.sel),eq=eqPerks();
+  if(eq.length){const bn=new Set(bestL.map(x=>x.n)),en=new Set(eq.map(x=>x.n));const out=eq.filter(x=>!bn.has(x.n)),inn=bestL.filter(x=>!en.has(x.n));
+    const me=evalBuild(CUR.eqFn,eq,sol.ctx),g=pct(best.power-me.power);
+    if(!out.length&&!inn.length)row('Ausrüsten','Dein Build im Spiel ist schon das beste.','');
+    else row('Ausrüsten',`${out.map(x=>esc(x.n)).join(', ')||'–'} raus, ${inn.map(x=>esc(x.n)).join(', ')||'–'} rein`,`${g>0?fmtGain(g)+' Build-Score':'gleich gut'}. Deine Perks im Spiel stellst du in der Perk-Liste mit „im Spiel an“ ein.`);
+  }else row('Ausrüsten',bestL.map(x=>esc(x.n)).join(' · ')||'Noch keine Perks',`Bestes Build mit ${esc(fn)}. Trägst du das schon?`,`<button class="lnk" data-act="equipBest">Ja, trage ich →</button>`);
+  // Leveln
+  if(an.ups.length){const u=an.ups[0];row('Leveln',`${esc(u.x.n)} +${u.x.l} → +10`,`${fmtGain(u.g10)} Build-Score${an.ups[1]?`, danach ${esc(an.ups[1].x.n)} (${fmtGain(an.ups[1].g10)})`:''}.`,det('up'));}
+  else row('Leveln','Alles im Build ist auf +10.','');
+  // Verfüttern
+  row('Verfüttern',an.feed.length?an.feed.map(x=>`${esc(x.n)} +${x.l}`).join(', '):'Nichts',an.feed.length?`Bringt deinem Build mit ${esc(fn)} auch auf +10 nichts, also ab damit in deine Upgrades.${an.keepTrade.length?` ${an.keepTrade.map(x=>esc(x.n)).join(', ')} ${an.keepTrade.length>1?'sind':'ist'} zu wertvoll dafür, die lieber traden.`:''}`:(an.keepTrade.length?`Die nutzlosen Perks (${an.keepTrade.map(x=>esc(x.n)).join(', ')}) sind zu wertvoll zum Verfüttern, lieber traden.`:'Alle Perks können noch nützlich werden.'),det('feed'));
+  // Traden
+  {const w=an.want[0],fw=an.famWant[0];const give=an.keepTrade[0]||an.giveP.filter(o=>o.c.p.r!=='C')[0];
+   row('Traden',w?`${esc(w.p.n)} holen (${fmtGain(w.g10)} auf +10)`:'Kein Perk würde viel bringen',[give?`Dafür abgeben: ${esc(give.n||give.c.n)}`:'',fw&&fw.g>5?`Einzige Familie, die sich lohnt: ${esc(fw.F.n)} (${fmtGain(fw.g)})`:''].filter(Boolean).join(' · ')||'',`<span class="glinks">${det('trade')}<a class="lnk" href="https://discord.gg/aotrhub" target="_blank" rel="noopener">Trading-Discord ↗</a></span>`);}
+  // Skill-Baum
+  {const ids=tr.plan.map(it=>it.t+':'+it.seg+':'+it.i).filter(id=>!tr.bought.has(id));const nx=ids.slice(0,3).map(id=>nodeById(id).nd.n);
+   const aff=tr.tap?ids.filter(id=>tr.afford.has(id)).length:0;
+   row('Skill-Baum',nx.length?nx.map(esc).join(' → '):'Komplett',nx.length?(tr.tap?(aff?`${aff} Knoten kannst du dir mit deinen freien SP jetzt holen.`:'Trag im Skill-Baum deine freien SP ein.'):'Tipp im Skill-Baum an, was du schon hast, dann stimmt das genau.'):'',`<a class="lnk" href="#baum">Skill-Baum →</a>`);}
+  // Gear
+  if(gearNext())row('Gear',esc(gearNextTxt()),'Upgraden lohnt sich immer; das hier ist nur die Reihenfolge.','');
+  $('glance').innerHTML=`<div class="card-h"><h2>Das solltest du jetzt tun</h2><small>${esc(fn)} · ${esc(A.n)}</small></div><ol class="gl">${rows.join('')}</ol>`;
+}
+function itemHtml(gain,cls,title,body){return `<li class="aitem"><span class="gain ${cls||''}">${gain}</span><div><b>${title}</b>${body?`<p>${body}</p>`:''}</div></li>`;}
+function renderResult(){
+  const sol=CUR.sol,an=CUR.an,best=sol.best,m=sol.m,f=FAM[best.fn],a=S.arch;
+  const counts=best.counts;let lo='';
+  const fsl=sol.noFam?{}:slotsOf(best.fn);
+  CATS.forEach(c=>best.sel[c].forEach((x,i)=>{const lbl=CAT[c]+(counts[c]>1?' '+(i+1):'')+(fsl[c]&&i>=counts[c]-fsl[c]?' · Familie':'');
+    lo+=`<li class="lrow"><span class="slotname">${lbl}</span><span class="nm">${x?`${rarChip(x.p.r)}<b>${esc(x.n)} +${x.l}</b>${uncM(x.p.u)}<small class="muted">${esc(perkSummary(x.p,x.l))}</small>`:'<span class="muted">leer – kein passender Perk im Inventar</span>'}</span></li>`;}));
+  ['off','def','sup'].forEach(c=>{if(!CUR.tree.slot[c])lo+=`<li class="lrow"><span class="slotname">${CAT[c]}${counts[c]?' '+(counts[c]+1):''}</span><span class="nm muted">Slot noch nicht freigeschaltet (Skill-Baum)</span></li>`;});
+  if(!sol.noFam&&FTREE[best.fn]&&CUR.tree.famFn===best.fn){const fs=CUR.tree.famSlot||{},sl=slotsOf(best.fn);['def','sup'].forEach(c=>{if((sl[c]||0)>(fs[c]||0))lo+=`<li class="lrow"><span class="slotname">${CAT[c]} · Familie</span><span class="nm muted">Noch nicht im ${esc(best.fn)}-Familienbaum freigeschaltet (7 SP)</span></li>`;});}
+  const famOpts=['<option value="">automatisch (bester)</option>'].concat(S.fams.map(n=>`<option value="${esc(n)}"${S.famLock===n?' selected':''}>${esc(n)}</option>`)).join('');
+  const alt=sol.results.filter(r=>r.fn!==best.fn).slice(0,2).map(r=>`${esc(r.fn)} ${fmtGain(pct(r.power-best.power))}`).join(', ');
+  // Crit-Zeile
+  const cap=m.ccRaw>=100;
+  const crit=`<div class="critline ${cap?'cap':''}"><span>Crit-Chance <b>${nf0.format(m.cc)} %</b>${cap?` (Cap erreicht${m.ccRaw>100.5?', '+nf0.format(m.ccRaw-100)+' % verschwendet':''})`:''}</span><span>Crit-Schaden <b>${nf0.format(m.cd)} %</b></span><span title="Crit-Chance × Crit-Schaden: so viel mehr Schaden macht ein Treffer im Schnitt durch Crits">Ø pro Treffer <b>+${nf1.format(m.cc*m.cd/100)} %</b></span>${m.gambler>1?`<span>Gambler <b>×${nf1.format(m.gambler)}</b></span>`:''}${cap?'<span>Weitere Crit-Chance zählt der Algo nicht mehr, deshalb nimmt er lieber Schaden oder Crit-Schaden.</span>':''}</div>`;
+  // Aktionen
+  let list='';
+  if(UI.act==='up'){
+    list+=an.ups.length?an.ups.map(u=>itemHtml(fmtGain(u.g10),'',`${esc(u.x.n)} +${u.x.l} → +10`,`Pro Level ungefähr ${fmtGain(u.g1)} Build-Score.`)).join(''):'<li class="empty">Alle Perks im Build sind auf +10.</li>';
+    if(an.promote.length)list+='<li class="asub">Würde mit Upgrades ins Build kommen</li>'+an.promote.map(o=>itemHtml(fmtGain(o.g),'neu',`${esc(o.c.n)} +${o.c.l} → +${o.need}`,`Ab +${o.need} ersetzt er ${o.rep?esc(o.rep.n):'einen leeren Slot'}. Auf +10 bringt er ${fmtGain(o.g)}.`)).join('');
+    {const nx=gearNext();if(nx)list+='<li class="asub">ODM-Gear (Gold)</li>'+itemHtml(GR[nx.g+1],'neu',esc(gearNextTxt()),`Danach weiter in dieser Reihenfolge: ${gearPrio().map(gearName).join(' → ')}. Bis alles auf A+: ${nf0.format(gearLeft())} Gold. Wird beim Prestige zurückgesetzt.`);}
+    list+='<li class="asub">So enhancest du</li><li class="empty">Fodder: doppelte Perks oder Keys (Worn = Common, Wallsteel = Rare, Command = Epic, Lazurite = Legendary). Seit Update 4 kannst du beliebig viele auf einmal reinstecken. Perk-Level bleiben beim Prestige erhalten.</li>';
+  }else if(UI.act==='feed'){
+    list+=`<li class="empty">Hier steht, was deinem Build mit ${esc(best.fn)} auch auf +10 nichts bringt. Das kannst du gefahrlos als Fodder in deine wichtigen Perks stecken.</li>`;
+    list+='<li class="asub">Verfüttern</li>'+(an.feed.length?an.feed.map(x=>itemHtml('Fodder','neu',`${esc(x.n)} +${x.l} ${rarChip(x.p.r)}`,esc(x.why))).join(''):'<li class="empty">Nichts. Alle Perks können noch nützlich werden.</li>');
+    if(an.keepTrade.length)list+='<li class="asub">Nutzlos, aber zu wertvoll zum Verfüttern</li>'+an.keepTrade.map(x=>itemHtml('traden','',`${esc(x.n)} +${x.l} ${rarChip(x.p.r)}`,`${esc(x.why)} Tauschwert: ${tradeVal('perk',x.p)}. Findest du keinen Abnehmer, kannst du ihn auch verfüttern.`)).join('');
+    if(an.alts.length)list+='<li class="asub">Nicht verfüttern</li>'+itemHtml('behalten','neu',an.alts.map(c=>esc(c.n)+' +'+c.l).join(', '),'Auf +10 fast so gut wie dein Build. Falls du sie hochlevelst oder sich deine Werte ändern, kommen sie ins Build.');
+    if(an.ups.length)list+=`<li class="empty">Wohin mit dem Fodder? Zuerst in ${esc(an.ups[0].x.n)} (${fmtGain(an.ups[0].g10)} bis +10).</li>`;
+  }else if(UI.act==='trade'){
+    const lock=S.prestige<1?'<li class="empty">Seit Update 5 kannst du Perks und Artefakte ab Prestige 1 traden, Serums ab Prestige 2. Dazu brauchst du einen verifizierten Account, der mindestens 90 Tage alt ist.</li>':(S.prestige<3?'<li class="empty">Familien laut Guides erst ab Prestige 3. Trade-Steuer ist seit Update 5 um 20 % gesenkt.</li>':'');
+    list+=lock+'<li class="asub">Lohnt sich zu holen</li>';
+    list+=an.want.length?an.want.map(o=>itemHtml(fmtGain(o.g10),'',`${esc(o.p.n)}${uncM(o.p.u)} <span class="rar" style="--rc:var(--r-${o.p.r})">${RAR[o.p.r]}</span>`,`Auf +0 ${fmtGain(o.g0)}, auf +10 ${fmtGain(o.g10)}. Ersetzt ${o.rep?esc(o.rep.n):'einen leeren Slot'}. Tauschwert: ${tradeVal('perk',o.p)}.`)).join(''):'<li class="empty">Kein Perk würde dein Build deutlich verbessern.</li>';
+    if(an.famWant.length)list+=an.famWant.map(o=>itemHtml(fmtGain(o.g),'',`Familie ${esc(o.F.n)} ${tierB(o.F.t)}`,`Mit deinen jetzigen Perks. ${o.F.r==='S'?'Nur über Achievements freischaltbar.':'Tauschwert: '+tradeVal('fam',o.F)+'.'}`)).join('');
+    list+='<li class="asub">Kannst du abgeben</li>';
+    const give=an.giveP.filter(o=>o.c.p.r!=='C');
+    list+=give.length?give.map(o=>itemHtml(isFinite(o.loss)?fmtGain(o.loss):'0 %','bad',`${esc(o.c.n)} +${o.c.l} <span class="rar" style="--rc:var(--r-${o.c.p.r})">${RAR[o.c.p.r]}</span>`,`${esc(o.why)} Tauschwert: ${tradeVal('perk',o.c.p)}.`)).join(''):'';
+    if(an.alts.length)list+=itemHtml('≈ 0 %','neu','Behalten als Alternative',`${an.alts.map(c=>esc(c.n)+' +'+c.l).join(', ')} ${an.alts.length>1?'sind':'ist'} auf +10 fast so gut wie dein Build. Nicht abgeben, falls sich deine Werte ändern.`);
+    list+=an.dups.map(d=>itemHtml('Duplikat','neu',`${esc(d.n)} ×${d.extra.length+1}`,`Nur einer kann ausgerüstet sein. Die Kopie${d.extra.length>1?'n':''} auf ${d.extra.map(l=>'+'+l).join(', ')} als Fodder nutzen oder traden.`)).join('');
+    list+=an.famDups.map(o=>itemHtml('Duplikat','neu',`Familie ${esc(o.F.n)} ×${o.n}`,`Aktiv ist immer nur eine, Kopien bringen im Build nichts. ${o.n-1===1?'Eine Kopie':(o.n-1)+' Kopien'} kannst du traden${o.best?', die letzte behältst du':''}. Tauschwert: ${tradeVal('fam',o.F)} pro Stück.`)).join('');
+    list+=an.giveF.map(o=>o.g>0?itemHtml(fmtGain(o.g),'neu',`Familie ${esc(o.F.n)} ${tierB(o.F.t)}`,`Wäre für ${ARCH[a].n} stärker als ${esc(best.fn)}. Du hast ${esc(best.fn)} fest ausgewählt, also nicht abgeben.`):itemHtml(fmtGain(o.g),o.g<-0.5?'bad':'neu',`Familie ${esc(o.F.n)}${famCnt(o.F.n)>1?' ×'+famCnt(o.F.n):''} ${tierB(o.F.t)}`,`Für ${ARCH[a].n} schwächer als ${esc(best.fn)}.${o.other.length?' Behalten, wenn du auch '+o.other.join(' oder ')+' spielst.':''} Tauschwert: ${tradeVal('fam',o.F)}.`)).join('');
+    if(!give.length&&!an.dups.length&&!an.famDups.length&&!an.giveF.length)list+='<li class="empty">Nichts Überflüssiges gefunden.</li>';
+    list+='<li class="tlwrap">'+tradeLinksHtml()+'</li>';
+  }else{
+    list+=an.todo.map(s=>itemHtml(s.p==='hi'?'wichtig':s.p==='mid'?'bald':'Tipp',s.p==='hi'?'bad':s.p==='mid'?'':'neu',esc(s.t),esc(s.b))).join('');
+  }
+  // Rechenweg
+  const groups={};(m.src||[]).forEach(([k,s,v])=>{(groups[k]=groups[k]||[]).push([s,v]);});
+  const statHtml=Object.keys(STATS).filter(k=>groups[k]).map(k=>{const tot=groups[k].reduce((x,y)=>x+y[1],0);if(Math.abs(tot)<.001)return '';return `<div class="statrow"><span>${STATS[k].n}</span><span class="${tot<0?'neg':''}">${fmtStat(k,tot)}</span></div><div class="statsrc">${groups[k].map(g=>`${esc(g[0])} ${fmtStat(k,g[1])}`).join(' · ')}</div>`;}).join('');
+  const fx=(FAMX[best.fn]&&FAMX[best.fn][a])||{},A=ARCH[a],paths=recPaths(best.fn);
+  // Ziel-Build
+  const allC=PERKS.map(p=>({n:p.n,l:10,p}));
+  const ideal=optimizeFam(best.fn,allC,sol.ctx,{passes:1,full:true,counts:(sl=>({core:1+(sl.core||0),off:1+(sl.off||0),def:1+(sl.def||0),sup:1+(sl.sup||0)}))(slotsOf(best.fn))});
+  const ownedN=new Set(sol.cands.map(c=>c.n));
+  const idealRows=CATS.map(c=>ideal.sel[c].map(x=>x?`<li class="lrow"><span class="slotname">${CAT[c]}</span><span class="nm">${rarChip(x.p.r)}<b>${esc(x.n)}</b>${ownedN.has(x.n)?'<span class="chip ok">hast du</span>':'<span class="chip miss">fehlt</span>'}</span></li>`:'').join('')).join('');
+  const reach=clamp(best.power/Math.max(ideal.power,1e-6)*100,0,100);
+  $('result').innerHTML=`<section class="card result">
+   <div class="res-top"><span class="lbl">Dein bestes Build</span><h2>${esc(sol.noFam?'Ohne Familie':best.fn)} · ${esc(A.n)}</h2>
+    <div class="scoreline"><div class="big num">${nf0.format(m.score)}<small>Build-Score</small></div>${(()=>{const eq=eqPerks();if(!eq.length)return '';const me=evalBuild(CUR.eqFn,eq,sol.ctx);const g=pct(best.power-me.power);return `<div class="vsgame"><span class="lbl">Dein Build im Spiel</span><b class="num">${nf0.format(me.score)}</b><small>${Math.abs(g)<0.5?'genauso gut wie der Vorschlag':(g>0?'Vorschlag ist '+fmtGain(g)+' besser':'besser als der Vorschlag')}</small></div>`;})()}<small style="max-width:30ch">100 = ohne Boni. Schaden, Überleben, Mobilität und Utility, gewichtet für ${esc(A.n)}.</small></div></div>
+   <div class="minis">
+    <div class="mini"><div class="k">Schaden</div><div class="v num">${nf0.format(m.dmgIdx)}</div></div>
+    <div class="mini"><div class="k">Überleben</div><div class="v num">${nf0.format(m.ehp)}</div></div>
+    <div class="mini"><div class="k">Mobilität</div><div class="v num">${sgn(m.mob)}%</div></div>
+    <div class="mini"><div class="k">Titan</div><div class="v num">${canSh(f)?nf0.format(m.shIdx):'–'}</div></div></div>
+   ${crit}
+   <ul class="loadout">${lo}</ul>
+   <div class="famsel"><label for="famLock">Familie</label><select id="famLock" data-ch="famLock">${famOpts}</select>${alt?`<small>Alternativen: ${alt}</small>`:''}</div>
+   <div class="acts"><div class="seg" role="tablist" aria-label="Was jetzt?">
+    <button data-act="tabAct" data-v="up" aria-pressed="${UI.act==='up'}">Upgraden (${an.ups.length})</button>
+    <button data-act="tabAct" data-v="feed" aria-pressed="${UI.act==='feed'}">Verfüttern (${an.feed.length})</button>
+    <button data-act="tabAct" data-v="trade" aria-pressed="${UI.act==='trade'}">Traden (${an.want.length+an.famWant.length+an.giveP.filter(o=>o.c.p.r!=='C').length+an.dups.length+an.famDups.length})</button>
+    <button data-act="tabAct" data-v="todo" aria-pressed="${UI.act==='todo'}">To-do (${an.todo.length})</button></div></div>
+   <ul class="alist">${list}</ul>
+   <details class="dd"><summary>Ziel-Build: alle Perks auf +10 (du hast ${nf0.format(reach)} % davon)</summary><div class="ddb"><ul class="loadout" style="padding:0">${idealRows}</ul><small>Mit vollem Skill-Baum. Der Abstand zeigt, wie viel Luft dein Build noch hat.</small></div></details>
+   <details class="dd"><summary>Meta-Tipps: Skills, Baum, Artefakte</summary><div class="ddb">
+    <div><span class="lbl">Meta-Skill-Leiste</span><div style="margin-top:6px">${hotbarHtml(best.fn)}</div><p style="margin-top:6px"><a href="#baum">Ganzen Skill-Baum und Level-Fahrplan ansehen</a></p></div>
+    ${f.sh&&!S.titan?`<div><span class="lbl">Ohne Titan</span><p>Von ${esc(best.fn)} zählen nur die Werte${f.n==='Fritz'?' (+15 % Crit-Chance und Crit-Schaden, +10 % Schaden, +10 % Raid-Schaden, −10 % Cooldowns, Extra-Slots)':''}. Titan-Stats, Shifter-Skills und Shift-Perks rechnet der Algo mit 0.</p></div>`:''}
+    <div><span class="lbl">Skill-Baum</span><p>${['sup','off','def'].map(t=>`${TREES[t].n} ${paths[t]==='L'?'links':'rechts'} (${TREES[t][paths[t]].n})`).join(' · ')}. ${esc(recWhy(best.fn)||(fx.tree?'':A.treeNote))}</p></div>
+    <div><span class="lbl">Artefakte</span><p>${esc(A.art)}</p></div>
+    <div><span class="lbl">Memories für ${esc(A.n)}</span><p>${idealMems(best.fn,7).map(esc).join(', ')} (in dieser Reihenfolge)</p></div>
+    ${fx.note?`<div><span class="lbl">Hinweis</span><p>${esc(fx.note)}</p></div>`:''}</div></details>
+   <details class="dd"><summary>Alle Werte und Rechenweg</summary><div class="ddb">
+    <p class="muted">Boni werden addiert, Perk-Werte linear von +0 bis +10 gerechnet. Der Algo probiert jede deiner Familien mit allen Perk-Kombinationen und behält die mit dem höchsten Build-Score. Effekte ohne Zahl (z. B. Orders, Titan-Umrisse) bekommen einen geschätzten Bonus.</p>
+    ${statHtml||'<p class="muted">Noch keine Boni.</p>'}
+    ${m.bfAdd?`<div class="statrow"><span>Black Flash → Crit-Schaden</span><span>${fmtStat('cd',m.bfAdd)}</span></div>`:''}
+    ${m.tyrAdd?`<div class="statrow"><span>Tyrant's Stare → Schaden</span><span>${fmtStat('dmg',m.tyrAdd)}</span></div>`:''}
+    <div class="statrow"><span>Max HP gesamt · Schadensreduktion</span><span>${nf0.format(m.hpTot)} · ${nf1.format(m.dr)} %</span></div>
+    ${canSh(f)?`<div class="statrow"><span>Shifts in Folge</span><span>${m.shifts}</span></div>`:''}</div></details>
+  </section>`;
+}
+
+/* ---------- Skill-Baum ---------- */
+function famActs(fn){const F=FAM[fn];return (FSK[fn]||[]).filter(k=>!k.p&&(!k.t||canSh(F)));}
+function famPass(fn){return (FSK[fn]||[]).filter(k=>k.p);}
+function barFor(fn){
+  const x=FAMX[fn]&&FAMX[fn][S.arch],F=FAM[fn]||{},rp0=recPaths(fn),rp={},fs=famActs(fn).map(k=>k.n);
+  ['sup','off','def'].forEach(t=>{rp[t]=pathFixed(t)?S.tree.paths[t]:rp0[t];});
+  const offPath=n=>{const l=SKLOC[n];return l&&l.seg!=='base'&&l.seg!==rp[l.t];};
+  let b;
+  if(x&&x.bar)b=x.bar.slice();
+  else{b=fs.slice();ARCH[S.arch].bar.forEach(n=>{if(!b.includes(n))b.push(n);});
+    while(b.length>5){let w=-1,wv=1e9;b.forEach((n,i)=>{if(fs.includes(n))return;const v=SKT[n]||2;if(v<=wv){wv=v;w=i;}});if(w<0)break;b.splice(w,1);}}
+  b=b.filter(n=>!(NEEDT.has(n)&&!canSh(F)));
+  b=b.map(n=>offPath(n)&&OSW[n]?OSW[n]:n);
+  b=[...new Set(b)];
+  for(const n of ARCH[S.arch].bar.concat(['Black Flare','Bandages','Order: Rage','Red Flare','Counter'])){if(b.length>=5)break;if(!b.includes(n)&&!offPath(n))b.push(n);}
+  return b.slice(0,5);
+}
+function skillStatus(sk){
+  const loc=skLoc(sk),tr=CUR.tree,ex=SKX[sk]||{};
+  if(!loc)return {src:ex.src||'',st:sk==='frei'?'':(NEEDT.has(sk)?'braucht Titan':(/Familie/.test(ex.src||'')?'Familien-Baum':(ex.src?'ohne Skill-Punkte':''))),cls:'',x:ex.x||'',fam:true};
+  const T=TREES[loc.t],segN=loc.seg==='base'?'Basis':T[loc.seg].n+'-Pfad',src=loc.t==='fam'?`${T.fam}-Familienbaum`:`${T.n} · ${segN}`;
+  if(loc.seg!=='base'&&loc.seg!==S.tree.paths[loc.t])return {src,st:'anderer Pfad gewählt',cls:'warn',x:loc.nd.x};
+  const id=loc.t+':'+loc.seg+':'+loc.i,b=tr.bought.get(id);
+  const x=(SKX[sk]&&SKX[sk].x)||loc.nd.x;
+  return {src,st:b?'freigeschaltet':(tr.tap?(tr.afford.has(id)?'jetzt kaufbar':`noch ${tr.cum.get(id)} SP`):`Schritt ${tr.planned.get(id)} · ab ${tr.cum.get(id)} SP`),cls:b?'ok':'',x,step:b||tr.planned.get(id),sp:tr.cum.get(id)};
+}
+function hotbarHtml(fn){
+  const pas=famPass(fn);
+  return '<ol class="hotbar" aria-label="Skill-Leiste">'+barFor(fn).map((sk,i)=>{const s2=skillStatus(sk);
+    return `<li class="hk ${s2.cls}${s2.fam&&/Familie/.test(s2.src)?' fam':''}" title="${esc(sk+(s2.x?': '+s2.x:''))}"><span class="key">${i+1}</span>${SKCD[sk]?`<span class="cd">${SKCD[sk]} s</span>`:''}<b>${esc(sk)}</b><small>${esc(s2.src)}</small>${s2.st?`<em>${esc(s2.st)}</em>`:''}</li>`;}).join('')+'</ol>'+
+    (pas.length?`<p class="pas"><span class="lbl">Immer aktiv</span> ${pas.map(k=>`<span class="chip" title="${esc(k.x)}">${esc(k.n)}</span>`).join(' ')}</p>`:'');
+}
+function roadmap(){
+  const tr=CUR.tree,chunks=[];let cur=null;
+  tr.plan.forEach(it=>{const id=it.t+':'+it.seg+':'+it.i,key=it.t+'|'+it.seg;
+    if(!cur||cur.key!==key||cur.closed){cur={key,t:it.t,seg:it.seg,items:[],closed:false};chunks.push(cur);}
+    cur.items.push({it,id});if(it.nd.k==='slot'&&it.t!=='fam')cur.closed=true;});
+  let baseSeen={};
+  return chunks.map(c=>{const T=TREES[c.t],ids=c.items.map(x=>x.id),got=ids.filter(id=>tr.bought.has(id)).length;
+    const steps=ids.map(id=>tr.tap?tr.planned.get(id):(tr.bought.get(id)||tr.planned.get(id))).filter(x=>x!=null);if(!steps.length)steps.push(0);
+    let title;if(c.t==='fam'){title=baseSeen.fam?`${T.fam}-Familienbaum: Rest`:`${T.fam}-Familienbaum`;baseSeen.fam=1;}else if(c.seg==='base'){title=baseSeen[c.t]?`${T.n}: Rest der Basis`:(c.closed?`${T.n}: Basis bis Perk-Slot`:`${T.n}: Basis`);baseSeen[c.t]=1;}
+    else{const k=c.t+c.seg,last=c.items[c.items.length-1],full=last.it.i===T[c.seg].nodes.length-1;title=baseSeen[k]?`${T.n}: Rest vom ${T[c.seg].n}-Pfad`:(!full&&last.it.nd.k==='skill'?`${T.n}: ${T[c.seg].n}-Pfad bis ${last.it.nd.n}`:`${T.n}: ${T[c.seg].n}-Pfad`);baseSeen[k]=1;}
+    const st={};c.items.forEach(x=>{if(x.it.nd.s)for(const k in x.it.nd.s)st[k]=(st[k]||0)+x.it.nd.s[k];});
+    const skills=c.items.filter(x=>x.it.nd.k==='skill').map(x=>x.it.nd.n),slot=c.items.filter(x=>x.it.nd.k==='slot').length,cap=c.items.some(x=>x.it.nd.k==='cap');
+    return {title,sp:c.items.reduce((a,x)=>a+x.it.nd.sp,0),cumEnd:tr.cum.get(ids[ids.length-1]),afford:ids.some(id=>tr.afford.has(id)),from:Math.min(...steps),to:Math.max(...steps),done:got===ids.length,part:got>0&&got<ids.length,skills,slot,cap,t:c.t,st};});
+}
+function gtreeHtml(fn){
+  const tr=CUR.tree,paths=S.tree.paths,rec=recPaths(fn),barIds=new Set(barFor(fn).map(n=>skLoc(n)).filter(Boolean).map(l=>l.t+':'+l.seg+':'+l.i));
+  const nd=(t,seg,i,n)=>{const id=t+':'+seg+':'+i,b=tr.bought.get(id),pl=tr.planned.get(id),af=tr.afford.has(id);
+    const eff=n.s?Object.entries(n.s).map(([k,v])=>STATS[k].n+' '+fmtStat(k,v)).join(', '):n.x;
+    return `<li class="nd k-${n.k}${b?' got':''}${af?' aff':''}${barIds.has(id)?' meta':''}"><button type="button" class="ndb" data-act="tap" data-id="${id}" aria-pressed="${!!b}" title="${esc(n.n+': '+eff+' · '+n.sp+' SP')}"><span class="mk" aria-hidden="true"></span><span class="nl"><b>${esc(n.n)}</b><small>${esc(eff)}</small></span><span class="ns">${b?'✓':(af?'jetzt':(pl||''))}<small>${n.sp} SP</small></span></button></li>`;};
+  const fam=TREES.fam?`<section class="gt ftree" aria-label="${esc(TREES.fam.fam)}-Familienbaum"><h3>${esc(TREES.fam.fam)}-Familienbaum</h3><ol class="trunk">${nd('fam','base',0,TREES.fam.base[0])}</ol><ol class="trunk fbr">${TREES.fam.base.slice(1).map((n,j)=>nd('fam','base',j+1,n)).join('')}</ol><p class="help" style="margin:6px 4px 0">Founder's Vengeance ist die Wurzel, alles andere hängt direkt dran.</p></section>`:'';
+  return fam+['sup','off','def'].map(t=>{const T=TREES[t];
+    const branch=sg=>{const on=paths[t]===sg;return `<div class="branch ${on?'on':'off'}"><div class="bh"><b>${sg==='L'?'Links':'Rechts'} · ${T[sg].n}</b>${rec[t]===sg?'<span class="chip ok">Meta</span>':''}${on?'':`<button class="btn sm" data-act="path" data-t="${t}" data-v="${sg}">Wählen</button>`}</div><ol class="trunk">${T[sg].nodes.map((n,i)=>nd(t,sg,i,n)).join('')}</ol></div>`;};
+    return `<section class="gt" aria-label="${T.n}-Baum"><h3>${T.n}</h3><ol class="trunk">${T.base.map((n,i)=>nd(t,'base',i,n)).join('')}</ol><div class="fork">${branch('L')}${branch('R')}</div></section>`;}).join('');
+}
+function renderTree(){
+  const tr=CUR.tree,fn=CUR.sol.best.fn,A=ARCH[S.arch],rec=recPaths(fn);
+  const an=(CUR.an=analyze(CUR.sol));
+  const off=['sup','off','def'].filter(t=>S.tree.paths[t]!==rec[t]),offFree=off.filter(t=>!pathLocked(t)),offLock=off.filter(t=>pathLocked(t));
+  const slotIds=tr.plan.filter(it=>it.nd.k==='slot').map(it=>it.t+':'+it.seg+':'+it.i);
+  const openSlots=slotIds.filter(id=>!tr.bought.has(id)),allSlotsSP=openSlots.length?Math.max(...openSlots.map(id=>tr.cum.get(id))):0;
+  const barSk=barFor(fn).map(sk=>({sk,s:skillStatus(sk)})).filter(o=>skLoc(o.sk));
+  const lastBarSP=barSk.filter(o=>o.s.sp).reduce((a,o)=>Math.max(a,o.s.sp),0);
+  const famSk=barFor(fn).filter(sk=>!skLoc(sk)&&sk!=='frei');
+  const prio=[];
+  prio.push(itemHtml(openSlots.length?'1.':'fertig','neu',`Alle ${slotIds.length} Perk-Slots`,(openSlots.length?`${tr.tap?'Noch':'Mit'} ${allSlotsSP} SP ${tr.tap?'bis du alle hast':'hast du alle'}. Jeder Slot ist ein ganzer Perk mehr, das schlägt jeden Stat-Knoten.`:'Alle Perk-Slots sind frei. Jeder Slot ist ein ganzer Perk mehr.')+(TREES.fam?` Die zwei ${esc(TREES.fam.fam)}-Slots im Familienbaum kosten nur 7 SP (plus 3 SP für Founder's Vengeance), die holst du deshalb zuerst.`:'')));
+  if(barSk.length)prio.push(itemHtml(barSk.every(o=>o.s.cls==='ok')?'fertig':'2.','neu','Meta-Skills der Leiste',barSk.map(o=>`${esc(o.sk)} (${o.s.cls==='warn'?'anderer Pfad':o.s.cls==='ok'?'✓':(tr.tap?'noch ':'ab ')+o.s.sp+' SP'})`).join(', ')+(lastBarSP?(tr.tap?`. Noch ${lastBarSP} SP, dann ist die Leiste komplett.`:`. Mit ${lastBarSP} SP ist die Leiste komplett.`):'.')));
+  if(famSk.length)prio.push(itemHtml('früh','neu','Familien-Skills',`${famSk.map(esc).join(', ')} kosten auch SP, sind im Familien-Baum aber von Anfang an freischaltbar, ohne Vorstufen. Am besten gleich mit den Perk-Slots holen. Die SP-Zahlen im Fahrplan zählen nur die drei Hauptbäume.`));
+  if(an.ups.length)prio.push(itemHtml('3.','neu','Perks enhancen',an.ups.slice(0,3).map(u=>`${esc(u.x.n)} +${u.x.l} → +10 (${fmtGain(u.g10)})`).join(', ')+'. Perk-Level bleiben beim Prestige erhalten, deshalb lohnt sich das dauerhaft.'));
+  prio.push(itemHtml('4.','neu','ODM-Gear mit Gold',(gearNext()?'Als Nächstes: '+esc(gearNextTxt())+'. ':'')+gearPrio().map(gearName).join(' → ')+'. Wird beim Prestige zurückgesetzt.'));
+  if(canSh(FAM[fn])&&S.arch==='shift')prio.push(itemHtml('5.','neu','Titan-Skill-Baum',`Shifter Mastery und Boxing Mastery leveln, Resonance-Baum deines Titans komplett freischalten (6 Shards).`));
+  const road=roadmap().map(r=>{const stt=Object.entries(r.st).map(([k,v])=>STATS[k].n+' '+fmtStat(k,v)).join(', ');
+    const sk=r.skills.map(n=>barFor(fn).includes(n)?'★ '+n:n).join(', ');
+    return `<li class="rd ${r.done?'done':r.part?'part':''}"><span class="rdn">${r.done?'✓':''} ${tr.tap&&r.done?'':(r.from===r.to?r.from:r.from+'–'+r.to)}</span><div><b>${esc(r.title)}</b><p>${[r.slot?(r.slot>1?r.slot+' Perk-Slots':'Perk-Slot'):'',r.cap?'Capstone (Divine-Perks + legendäre Memories)':'',sk?'Skills: '+esc(sk):'',stt].filter(Boolean).join(' · ')}</p></div><span class="rdsp">${r.sp} SP<br><small>${r.done?'gekauft':(tr.tap?'noch '+r.cumEnd:'bis '+r.cumEnd)}</small></span></li>`;}).join('');
+  const nxt=tr.plan.map(it=>it.t+':'+it.seg+':'+it.i).filter(id=>tr.afford.has(id)).map(id=>nodeById(id).nd.n);
+  $('view-baum').innerHTML=`
+  <section class="card"><div class="tree-top"><div><h2>Skill-Baum</h2><p class="help" style="margin:4px 0 0;max-width:64ch">Für ${esc(fn)} · ${esc(A.n)}. ${tr.tap?'Tipp unten im Baum an, was du im Spiel schon hast. Davor liegende Knoten werden automatisch mit markiert, ein zweites Antippen nimmt den Knoten und alles danach wieder raus.':'Trag deine Skill-Punkte ein oder tipp unten im Baum an, was du hast.'} Jeder Knoten kostet 1.850 Gold, ein Reset 1.999 Gems.</p></div>
+    <div class="rowgap"><div class="seg" role="group" aria-label="Eingabe"><button data-act="treeMode" data-v="tap" aria-pressed="${tr.tap}">Antippen</button><button data-act="treeMode" data-v="sp" aria-pressed="${!tr.tap}">Nur SP-Zahl</button></div>
+     ${tr.tap?`<label class="fld"><span class="lbl">Freie SP im Spiel</span><input id="treeFree" type="number" min="0" value="${S.tree.free}" data-ch="free"></label>${tr.nodes?'<button class="btn sm" data-act="tapClear">Alles abwählen</button>':''}`:`<label class="fld"><span class="lbl">Skill-Punkte</span><input id="treeBudget" type="number" min="0" value="${S.tree.budget}" data-ch="budget"></label><button class="btn sm" data-act="treeMax">Alle (${tr.total} SP)</button>`}${offFree.length?`<button class="btn sm pri" data-act="treeRec">Meta-Pfade wählen</button>`:''}</div></div>
+   <div class="meter"><i style="width:${tr.total?tr.used/tr.total*100:0}%"></i></div>
+   ${tr.tap?`<p class="nextup">${nxt.length?`<b>Mit deinen ${tr.free} freien SP jetzt kaufen:</b> ${nxt.map(esc).join(' → ')}`:(tr.rest?`<b>Als Nächstes:</b> ${esc(nodeById(tr.plan.map(it=>it.t+':'+it.seg+':'+it.i).find(id=>!tr.bought.has(id))).nd.n)} (${tr.free?'deine '+tr.free+' SP reichen noch nicht':'trag oben deine freien SP ein'})`:'<b>Baum komplett.</b>')}</p>`:''}
+   <div class="kv"><span>${tr.tap?'Gekauft':'Ausgegeben'} <b>${tr.used}${tr.tap?'':' / '+tr.budget} SP</b></span><span>Knoten <b>${tr.nodes}</b></span><span>Gold <b>${nf0.format(tr.nodes*1850)}</b></span><span>Perk-Slots <b>${['off','def','sup'].filter(t=>tr.slot[t]).map(t=>CAT[t]).join(', ')||'keine'}</b></span></div>
+   ${recWhy(fn)?`<p class="help" style="margin-top:8px">${esc(recWhy(fn))}</p>`:''}
+   ${offFree.length?`<p class="help" style="margin-top:8px">In ${offFree.map(t=>TREES[t].n).join(', ')} ist noch nicht der Meta-Pfad gewählt.</p>`:''}
+   ${offLock.length?`<p class="help" style="margin-top:8px">${offLock.map(t=>`In ${TREES[t].n} hast du den ${TREES[t][S.tree.paths[t]].n}-Pfad, Meta wäre ${TREES[t][rec[t]].n}`).join('. ')}. Umskillen kostet 1.999 Gems, lohnt sich aber meist erst, wenn der Pfad dir wirklich fehlt.</p>`:''}</section>
+  <section class="card"><div class="card-h"><h2>Meta-Skill-Leiste</h2><small>Tasten 1–5 wie im Spiel</small></div>${hotbarHtml(fn)}
+   <ul class="sklist">${barFor(fn).map(sk=>{const s2=skillStatus(sk);return `<li><b>${esc(sk)}</b> <span class="muted">${esc(s2.src)}${SKCD[sk]?' · '+SKCD[sk]+' s Cooldown':''}</span>${s2.x?`<br><span>${esc(s2.x)}</span>`:'<br><span class="muted">Effekt im Spiel nachlesen.</span>'}</li>`;}).join('')}</ul>
+   ${(FAMX[fn]&&FAMX[fn][S.arch]&&FAMX[fn][S.arch].note)?`<p class="help" style="margin-top:10px">${esc(FAMX[fn][S.arch].note)}</p>`:''}</section>
+  <div class="two">
+   <section class="card"><div class="card-h"><h2>Was du zuerst levelst</h2></div><ul class="alist" style="padding:0">${prio.join('')}</ul></section>
+   <section class="card"><div class="card-h"><h2>Fahrplan</h2><small>Schritte · SP · Summe</small></div><ol class="road">${road}</ol><p class="help" style="margin-top:8px">★ = Skill auf deiner Meta-Leiste. Grün = schon gekauft.</p></section>
+  </div>
+  <section class="card"><div class="card-h"><h2>Baum wie im Spiel</h2><span class="legend"><span><i class="mk k-stat"></i>Stat</span><span><i class="mk k-skill"></i>Skill</span><span><i class="mk k-slot"></i>Perk-Slot</span><span><i class="mk k-cap"></i>Capstone</span><span><i class="mk got"></i>gekauft</span><span><i class="mk meta"></i>Meta-Skill</span></span></div>
+   <p class="help">Oben der Stamm, danach gabelt sich jeder Baum in zwei Pfade, von denen du nur einen nehmen kannst. <b>Antippen = hast du.</b> ✓ heißt gekauft, „jetzt“ kannst du dir mit deinen freien SP leisten, die Zahl ist die Reihenfolge danach.</p>
+   <div class="gtree${TREES.fam?' hasfam':''}">${gtreeHtml(fn)}</div>
+   <p class="help" style="margin-top:10px">Knotenwerte aus dem Item-Level-Guide. Capstones (20 SP) laut Update-5-Patchnotes; Stat-Knoten aus dem Item-Level-Guide.</p></section>`;
+}
+
+/* ---------- Prestige ---------- */
+function renderPrestige(){
+  const p=S.prestige,nx=p<5?PRE[p+1]:null,ta=talentAdvice(CUR.sol.best.fn);
+  const rows=PRE.map(r=>`<tr class="${r.p===p?'cur':''}"><td>${r.p?'★'+r.p:'–'} ${esc(r.rank)}</td><td class="num">${r.need??'–'}</td><td class="num">${r.xp?nf0.format(r.xp):'–'}</td><td class="num">${r.cap}</td><td class="num">${r.mem}</td><td class="num">${r.conv?nf0.format(r.conv)+' : 1':'–'}</td></tr>`).join('');
+  let calc;
+  if(nx){const left=Math.max(0,nx.xp-(+S.xpNow||0)),h=S.xph>0?left/S.xph:0,pc=clamp((+S.xpNow||0)/nx.xp*100,0,100);
+    calc=`<section class="card"><div class="card-h"><h2>Bis Prestige ${p+1}</h2><small>Level ${S.level} von ${nx.need} nötig</small></div>
+     <div class="rowgap"><label class="fld"><span class="lbl">EXP bisher</span><input id="xpNow" type="number" min="0" step="1000" value="${S.xpNow}" data-ch="xpNow" style="width:9em"></label>
+     <label class="fld"><span class="lbl">EXP pro Stunde</span><input id="xph" type="number" min="0" step="1000" value="${S.xph}" data-ch="xph" style="width:9em"></label></div>
+     <div class="meter"><i style="width:${pc}%"></i></div>
+     <div class="kv"><span>Noch <b>${nf0.format(left)} EXP</b></span><span>Zeit <b>${S.xph>0?nf1.format(h)+' h':'–'}</b></span><span>Fortschritt <b>${nf0.format(pc)} %</b></span></div>
+     <p class="help" style="margin-top:8px">Deinen EXP-Stand siehst du im Prestige-Menü (Equipment → Prestige). Raids auf hoher Stufe, Waves, EXP-Tränke und der stündliche Map-Boost (+25 % EXP) gehen am schnellsten.</p></section>`;}
+  else calc='<section class="card"><h2>Maximales Prestige erreicht</h2><p class="help" style="margin-top:6px">Captain (★5): 7 Memory-Slots, Level-Cap 225. Jetzt zählen nur noch Perk-Level, Memories und Artefakt-Substats.</p></section>';
+  const tal=S.talents.slice(0,p).filter(Boolean),cntT=k=>tal.filter(x=>x===k).length;
+  $('view-prestige').innerHTML=`<div class="two">
+   <div class="col"><section class="card"><div class="card-h"><h2>Prestige-Stufen</h2><small>du: ★${p}</small></div>
+    <div class="tblwrap"><table><thead><tr><th>Rang</th><th class="num">Level nötig</th><th class="num">EXP</th><th class="num">Level-Cap</th><th class="num">Memory-Slots</th><th class="num">Gold → Gem</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="help" style="margin-top:8px">Jedes Prestige: Talent wählen, +1 Memory-Slot (★3 und ★5 je +1 extra), mehr Gems aus der AFK-Zone, +0,005 % Chance auf Legendary-Familien. Colossal-Raid ab ★2, Mythic-Perks im Waves-Market ab ★1. Traden laut Guides: Perks und Artefakte ab ★2, Familien ab ★3.</p></section>${calc}</div>
+   <div class="col"><section class="card"><div class="card-h"><h2>Talent-Wahl</h2></div>
+    <p>Empfehlung jetzt: <b>${esc(ta.n)}</b>.</p>
+    <div class="kv" style="margin-top:8px"><span>Luck <b>${sgn(cntT('luck')*7.5)} %</b></span><span>EXP <b>${sgn(cntT('xp')*15)} %</b></span><span>Gold <b>${sgn(cntT('gold')*15)} %</b></span></div>
+    <p class="help" style="margin-top:8px">Gold lohnt selten, weil ODM-Upgrades beim Prestige zurückgesetzt werden. Die Wahl ist dauerhaft.</p></section>
+   <section class="card"><div class="card-h"><h2>Vor dem Prestige</h2></div><ul class="check">
+     <li>Ein Serum besorgen, damit du nach dem Reset direkt Raids spielen kannst.</li>
+     <li>Gold-Belohnungen aus dem Battlepass erst nach dem Prestige abholen.</li>
+     <li>Prestige Scrolls sammeln: nach 20 Scrolls ist ein 3★+ Memory garantiert.</li>
+     <li>Übriges Gold wird zu Gems (${nx&&nx.conv?nf0.format(nx.conv)+' Gold = 1 Gem':'1.000 Gold = 1 Gem'}, Cap 200 Mio. × Prestige). Kurz vorher keine teuren ODM-Upgrades mehr kaufen.</li>
+     <li>Bleibt: Perks samt Level, Familien, Memories, Serums, Gems, Spins, Kosmetik.</li>
+     <li>Wird zurückgesetzt: Level, Skill-Baum, ODM/TS-Upgrades, EXP-Zähler.</li>
+     <li>Nicht prestigen, während du eine Mission oder einen Raid hostest.</li></ul></section></div></div>`;
+}
+
+/* ---------- Nachschlagen ---------- */
+function renderDb(){
+  const kinds=[['perk','Perks'],['mem','Memories'],['fam','Familien'],['art','Artefakte']];
+  const cats=UI.db==='perk'?[['all','Alle'],['core','Core'],['off','Offense'],['def','Defense'],['sup','Support']]:UI.db==='mem'?[['all','Alle'],['off','Offense'],['def','Defense'],['sup','Support']]:null;
+  $('view-datenbank').innerHTML=`<section class="card"><div class="card-h"><h2>Nachschlagen</h2><small>${PERKS.length} Perks · ${MEMS.length} Memories · ${FAMS.length} Familien</small></div>
+   <div class="dbbar"><input type="search" id="dbQ" placeholder="Suchen, z. B. Crit, Shifter, Gas …" value="${esc(UI.q)}" aria-label="Durchsuchen">
+    <div class="seg" role="group" aria-label="Typ">${kinds.map(([k,n])=>`<button data-act="dbk" data-v="${k}" aria-pressed="${UI.db===k}">${n}</button>`).join('')}</div>
+    ${cats?`<div class="seg" role="group" aria-label="Kategorie">${cats.map(([k,n])=>`<button data-act="dbc" data-v="${k}" aria-pressed="${UI.dbCat===k}">${n}</button>`).join('')}</div>`:''}</div>
+   <ul class="dbl" id="dbList"></ul></section>
+   <section class="card"><div class="card-h"><h2>Quellen &amp; Datenstand</h2></div>
+    <p class="help" style="max-width:70ch">Die Seite kann das Wiki nicht live abrufen, deshalb sind die Daten eingebaut (Stand Update 5 vom 31.10.2026). Wo sich Quellen widersprechen, steht ein <span class="unc">≈</span>; im Zweifel zählt der Tooltip im Spiel.</p>
+    <ul class="src">${SOURCES.map(s=>`<li><a href="${s[1]}" target="_blank" rel="noopener">${esc(s[0])}</a></li>`).join('')}</ul></section>`;
+  renderDbList();
+}
+function renderDbList(){
+  const el=$('dbList');if(!el)return;const q=UI.q.trim().toLowerCase();
+  const hit=(...s)=>!q||s.join(' ').toLowerCase().includes(q);let items=[];
+  if(UI.db==='perk')items=PERKS.filter(p=>(UI.dbCat==='all'||p.c===UI.dbCat)&&hit(p.n,p.x,CAT[p.c],RAR[p.r])).sort((a,b)=>RORD[b.r]-RORD[a.r]||TS[b.t]-TS[a.t]).map(p=>`<li class="dbi"><div class="top"><b>${esc(p.n)}${uncM(p.u)}</b>${rarChip(p.r)}${tierB(p.t)}</div><p>${esc(p.x)}</p><div class="meta">${CAT[p.c]} · Tauschwert ${esc(tradeVal('perk',p))}</div></li>`);
+  else if(UI.db==='mem')items=MEMS.filter(m=>(UI.dbCat==='all'||m.y===UI.dbCat)&&hit(m.n,m.x,MTYPE[m.y])).sort((a,b)=>TS[b.t]-TS[a.t]).map(m=>`<li class="dbi"><div class="top"><b>${esc(m.n)}${uncM(m.u)}</b>${stars(m.st)}${tierB(m.t)}</div><p>${esc(m.x)}</p><div class="meta">${MTYPE[m.y]}-Memory · nicht handelbar, nur über Prestige Scrolls</div></li>`);
+  else if(UI.db==='fam')items=FAMS.filter(F=>hit(F.n,F.x,RAR[F.r])).map(F=>{const st=Object.entries(F.s).map(([k,v])=>STATS[k].n+' '+fmtStat(k,v)).join(', '),sl=Object.entries(F.sl||{}).map(([k,v])=>`+${v} ${CAT[k]}-Slot`).join(', ');return `<li class="dbi"><div class="top"><b>${esc(F.n)}${uncM(F.u)}</b>${rarChip(F.r)}${tierB(F.t)}</div><p>${esc(F.x)}</p><div class="meta">${esc([st,sl,'Tauschwert '+tradeVal('fam',F)].filter(Boolean).join(' · '))}</div></li>`;});
+  else items=ARTS.filter(x=>x.n!=='Anderes Artefakt'&&hit(x.n,x.x)).map(x=>`<li class="dbi"><div class="top"><b>${esc(x.n)}${uncM(x.u)}</b>${x.r&&x.r!=='–'?`<span class="chip">${esc(x.r)}</span>`:''}</div><p>${esc(x.x)}</p>${DEMAND[x.n]?`<div class="meta">${esc(DEMAND[x.n])}</div>`:''}</li>`);
+  el.innerHTML=items.join('')||'<li class="empty">Keine Treffer.</li>';
+}
+
+/* ================= CODE ================= */
+function encode(){try{return btoa(unescape(encodeURIComponent(JSON.stringify(S))));}catch(e){return '';}}
+function decode(t){return JSON.parse(decodeURIComponent(escape(atob(t.trim()))));}
+
+/* ================= EVENTS ================= */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,d=b.dataset;
+  if(a!=='blank')UI.confirmBlank=false;
+  const mb=$('moreBox');if(mb)UI.moreOpen=mb.open;const sb=$('slotBox');if(sb)UI.slotOpen=sb.open;const gb=$('gearBox');if(gb)UI.gearOpen=gb.open;
+  switch(a){
+   case 'prestige':S.prestige=+d.v;touch();break;
+   case 'slotReset':if(S.slots)delete S.slots[d.v];UI.slotOpen=true;touch();break;
+   case 'titan':S.titan=d.v==='1';if(!S.titan&&S.arch==='shift'){S.arch='odm';S.tree.paths=recPaths(CUR.sol?CUR.sol.best.fn:'Reeves');}touch();break;
+   case 'arch':S.arch=d.v;S.tree.paths=recPaths(CUR.sol?CUR.sol.best.fn:'Reeves');touch();break;
+   case 'addFam':{const n=$('addFam').value;if(!FAM[n])break;S.famN=S.famN||{};if(S.fams.includes(n))S.famN[n]=famCnt(n)+1;else{S.fams.push(n);S.famN[n]=1;}UI.lastFam=n;touch();break;}
+   case 'famDec':{const n=d.v;if(famCnt(n)>1)S.famN[n]=famCnt(n)-1;touch();break;}
+   case 'rmFam':S.fams=S.fams.filter(x=>x!==d.v);if(S.famN)delete S.famN[d.v];if(S.famLock===d.v)S.famLock='';touch();break;
+   case 'add':{const n=$('addPerk').value,l=+$('addLvl').value;UI.lastAdd=n;if(PERK[n]){S.inv.push({n,l});touch();}break;}
+   case 'lvl':{const x=S.inv[+d.i];if(x){x.l=clamp(x.l+ +d.d,0,10);touch();}break;}
+   case 'rm':S.inv.splice(+d.i,1);touch();break;
+   case 'equip':{const x=S.inv[+d.i];if(x){x.on=!x.on;touch();}break;}
+   case 'equipBest':{S.inv.forEach(x=>{x.on=false;});const used=new Set();selList(CUR.sol.best.sel).forEach(b=>{const i=S.inv.findIndex((x,j)=>!used.has(j)&&x.n===b.n&&x.l===b.l);const j=i>=0?i:S.inv.findIndex((x,j)=>!used.has(j)&&x.n===b.n);if(j>=0){used.add(j);S.inv[j].on=true;}});if(!S.famLock)S.famLock=CUR.sol.best.fn;touch();break;}
+   case 'clearInv':S.inv=[];touch();break;
+   case 'tabAct':UI.act=d.v;renderResult();if(d.scroll){const r=$('result');if(r&&r.scrollIntoView)r.scrollIntoView({behavior:'smooth',block:'start'});}return;
+   case 'path':S.tree.paths[d.t]=d.v;S.tree.userPath=S.tree.userPath||{};S.tree.userPath[d.t]=true;if(S.tree.mode==='tap'){const ot=d.v==='L'?'R':'L';S.tree.own=S.tree.own.filter(id=>!id.startsWith(d.t+':'+ot+':'));}touch();break;
+   case 'treeMax':S.tree.budget=CUR.tree.total;touch();break;
+   case 'treeMode':if(d.v==='tap'&&S.tree.mode!=='tap'){const bk=[...CUR.tree.bought.keys()];S.tree.own=bk.filter(id=>!id.startsWith('fam:'));if(TREES.fam){S.tree.famOwn=S.tree.famOwn||{};S.tree.famOwn[TREES.fam.fam]=bk.filter(id=>id.startsWith('fam:')).map(id=>+id.split(':')[2]);}S.tree.free=0;S.tree.mode='tap';}else if(d.v==='sp'&&S.tree.mode!=='sp'){S.tree.budget=CUR.tree.used+(+S.tree.free||0);S.tree.mode='sp';}touch();break;
+   case 'tapClear':S.tree.own=[];if(TREES.fam&&S.tree.famOwn)delete S.tree.famOwn[TREES.fam.fam];touch();break;
+   case 'tap':{const nb=nodeById(d.id);if(!nb)break;
+     if(S.tree.mode!=='tap'){const bk=[...CUR.tree.bought.keys()];S.tree.own=bk.filter(id=>!id.startsWith('fam:'));if(TREES.fam){S.tree.famOwn=S.tree.famOwn||{};S.tree.famOwn[TREES.fam.fam]=bk.filter(id=>id.startsWith('fam:')).map(id=>+id.split(':')[2]);}S.tree.free=0;S.tree.mode='tap';}
+     if(nb.t==='fam'){const fn=TREES.fam.fam;S.tree.famOwn=S.tree.famOwn||{};const fo=new Set(S.tree.famOwn[fn]||[]);
+       if(fo.has(nb.i)){if(nb.i===0)fo.clear();else fo.delete(nb.i);}else{fo.add(0);fo.add(nb.i);}
+       S.tree.famOwn[fn]=[...fo];touch();break;}
+     const own=new Set(S.tree.own),T=TREES[nb.t],key=(sg,i)=>nb.t+':'+sg+':'+i;
+     if(own.has(d.id)){
+       if(nb.seg==='base'){for(let i=nb.i;i<T.base.length;i++)own.delete(key('base',i));['L','R'].forEach(sg=>T[sg].nodes.forEach((_,i)=>own.delete(key(sg,i))));}
+       else T[nb.seg].nodes.forEach((_,i)=>{if(i>=nb.i)own.delete(key(nb.seg,i));});
+     }else{
+       if(nb.seg==='base'){for(let i=0;i<=nb.i;i++)own.add(key('base',i));}
+       else{const ot=nb.seg==='L'?'R':'L';T[ot].nodes.forEach((_,i)=>own.delete(key(ot,i)));T.base.forEach((_,i)=>own.add(key('base',i)));for(let i=0;i<=nb.i;i++)own.add(key(nb.seg,i));S.tree.paths[nb.t]=nb.seg;}
+     }
+     S.tree.own=[...own];touch();break;}
+   case 'treeRec':{const rp=recPaths(CUR.sol.best.fn);S.tree.userPath={};['sup','off','def'].forEach(t=>{if(!pathLocked(t))S.tree.paths[t]=rp[t];});touch();break;}
+   case 'dbk':UI.db=d.v;UI.dbCat='all';break;
+   case 'dbc':UI.dbCat=d.v;break;
+   case 'example':S=fix(clone(EXAMPLE));break;
+   case 'blank':if(!UI.confirmBlank){UI.confirmBlank=true;renderNote();return;}UI.confirmBlank=false;S=fix(clone(BLANK));location.hash='#build';break;
+   case 'code':{const p=$('codePanel');p.hidden=!p.hidden;$('codeBtn').setAttribute('aria-expanded',String(!p.hidden));if(!p.hidden)$('codeOut').value=encode();return;}
+   case 'copy':{const t=$('codeOut'),m=$('copyMsg');const fb=()=>{t.focus();t.select();m.textContent='Markiert, mit Strg+C kopieren.';};try{navigator.clipboard.writeText(t.value).then(()=>{m.textContent='Kopiert.';},fb);}catch(err){fb();}return;}
+   case 'import':{const m=$('importMsg');try{const o=decode($('codeIn').value);if(!o||(o.v!==1&&o.v!==2))throw 0;S=fix(o);S.example=false;m.textContent='Build geladen.';m.style.color='var(--good)';}catch(err){m.textContent='Der Code ist ungültig. Kopiere ihn vollständig aus dem Feld „Dein Code“.';m.style.color='var(--bad)';return;}break;}
+   default:return;
+  }
+  renderAll();
+});
+document.addEventListener('change',e=>{
+  const t=e.target,ch=t.dataset&&t.dataset.ch;if(!ch)return;const d=t.dataset;
+  const mb=$('moreBox');if(mb)UI.moreOpen=mb.open;const sb=$('slotBox');if(sb)UI.slotOpen=sb.open;const gb=$('gearBox');if(gb)UI.gearOpen=gb.open;
+  switch(ch){
+   case 'level':S.level=clamp(Math.round(+t.value||1),1,capLvl());break;
+   case 'famLock':S.famLock=t.value;break;
+   case 'fslot':{const n=d.f;if(!FAM[n])break;const cur=Object.assign({core:0,off:0,def:0,sup:0},slotsOf(n));cur[d.c]=clamp(+t.value||0,0,2);S.slots=S.slots||{};S.slots[n]=cur;const def=FAM[n].sl||{};if(CATS.every(c=>(cur[c]||0)===(def[c]||0)))delete S.slots[n];UI.slotOpen=true;touch();break;}
+   case 'mem':{const i=+d.i;while(S.mems.length<=i)S.mems.push('');S.mems[i]=t.value;break;}
+   case 'art':S.arts[+d.i].a=t.value;break;
+   case 'artk':S.arts[+d.i].s[+d.j].k=t.value;break;
+   case 'artv':S.arts[+d.i].s[+d.j].v=+t.value||0;break;
+   case 'tal':{const i=+d.i;while(S.talents.length<=i)S.talents.push('');S.talents[i]=t.value;break;}
+   case 'raid':S.raid=t.checked;break;
+   case 'rage':S.rage=t.checked;break;
+   case 'helos':S.helos=+t.value;break;
+   case 'quake':S.quake=+t.value;break;
+   case 'base':S.base[d.k]=+t.value||0;break;
+   case 'budget':S.tree.budget=Math.max(0,Math.round(+t.value||0));break;
+   case 'free':S.tree.free=Math.max(0,Math.round(+t.value||0));break;
+   case 'gearG':if(S.gear[d.k])S.gear[d.k].g=clamp(+t.value||0,0,GR.length-1);break;
+   case 'gearW':if(S.gear[d.k])S.gear[d.k].w=t.value===''?'':clamp(+t.value||0,-100,5000);break;
+   case 'xpNow':S.xpNow=Math.max(0,+t.value||0);break;
+   case 'xph':S.xph=Math.max(0,+t.value||0);break;
+   default:return;
+  }
+  touch();renderAll();
+});
+document.addEventListener('input',e=>{const t=e.target;if(t.id==='dbQ'){UI.q=t.value;renderDbList();}else if(t.type==='range'&&t.dataset.out){const o=$(t.dataset.out);if(o)o.textContent=t.value;}});
+document.addEventListener('toggle',e=>{if(e.target.id==='moreBox')UI.moreOpen=e.target.open;},true);
+window.addEventListener('hashchange',()=>{if(location.hash==='#result'){return;}renderAll();});
+renderAll();
+})();
+
+</script>
+
+</body>
+</html>
