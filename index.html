@@ -118,6 +118,9 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-
 .seg button:hover{color:var(--ink)}
 .seg button[aria-pressed="true"]{background:var(--raise);color:var(--ink);box-shadow:var(--shadow)}
 .seg button.dim{opacity:.55}
+.fslots{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:10px}
+.fslots .segl{align-self:center;padding:0 6px 0 8px;font-size:.8rem;font-weight:700;color:var(--ink2)}
+.slot.lock .lnk{margin-top:2px;padding:6px 0;align-self:flex-start}
 .chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;border:1px solid var(--line2);font-size:.76rem;font-weight:600;white-space:nowrap;color:var(--ink2)}
 .chip.ok{border-color:var(--good);color:var(--good)}
 .chip.miss{border-style:dashed}
@@ -840,13 +843,13 @@ const utv=(tbl,key,a)=>{const u=tbl[key];if(!u)return 0;return u[a]!=null?u[a]:(
 
 /* ================= STATE ================= */
 const KEY='aotr-build-v2';
-const EXAMPLE={v:2,example:true,arch:'odm',prestige:3,level:142,fams:['Ackerman','Braun','Smith'],famLock:'',
+const EXAMPLE={v:2,example:true,arch:'odm',prestige:3,level:142,fams:['Ackerman','Braun','Smith'],famLock:'',famUnl:{Ackerman:{off:true}},
  inv:[{n:'Kengo',l:4},{n:'Black Flash',l:2},{n:'Unparalleled Strength',l:7},{n:'Perfect Form',l:5},{n:'Immortal',l:3},{n:'Robust',l:6},{n:'Gear Master',l:8},{n:'Font of Inspiration',l:0},{n:'Eviscerate',l:6},{n:'Hardy',l:10},{n:'Tatsujin',l:1},{n:'Courage Catalyst',l:5},{n:'Speedy',l:9},{n:'Speedy',l:2},{n:'Stalwart Durability',l:4},{n:'Sanctified',l:6},{n:'Luminous',l:10},{n:'Art of War',l:3}],
  mems:['Quakestrike','Gambler','Aegisurge','Lifefeed'],
  arts:[{a:'Scarf',s:[{k:'dmg',v:6},{k:'spd',v:4}]},{a:'Lantern',s:[{k:'cc',v:3},{k:'',v:0}]}],
  talents:['luck','luck','xp'],tree:{budget:120,paths:{sup:'R',off:'R',def:'R'},mode:'sp',own:[],free:0},
  base:{cc:5,cd:50,hp:100,spd:100},raid:false,rage:false,helos:0,quake:0,xpNow:2400000,xph:300000,titan:false};
-const BLANK={v:2,example:false,arch:'odm',prestige:0,level:1,fams:[],famLock:'',inv:[],mems:[],arts:[{a:'',s:[{k:'',v:0},{k:'',v:0}]},{a:'',s:[{k:'',v:0},{k:'',v:0}]}],talents:[],tree:{budget:0,paths:{sup:'R',off:'R',def:'R'},mode:'tap',own:[],free:0},base:{cc:5,cd:50,hp:100,spd:100},raid:false,rage:false,helos:0,quake:0,xpNow:0,xph:200000,titan:false,slots:{},famN:{},gear:{}};
+const BLANK={v:2,example:false,arch:'odm',prestige:0,level:1,fams:[],famLock:'',inv:[],mems:[],arts:[{a:'',s:[{k:'',v:0},{k:'',v:0}]},{a:'',s:[{k:'',v:0},{k:'',v:0}]}],talents:[],tree:{budget:0,paths:{sup:'R',off:'R',def:'R'},mode:'tap',own:[],free:0},base:{cc:5,cd:50,hp:100,spd:100},raid:false,rage:false,helos:0,quake:0,xpNow:0,xph:200000,titan:false,slots:{},famN:{},famUnl:{},gear:{}};
 const clone=o=>JSON.parse(JSON.stringify(o));
 function fix(o){
   if(o&&o.v===1){o=Object.assign({},o,{v:2,fams:o.family?[o.family]:[]});}
@@ -870,6 +873,7 @@ function fix(o){
   r.titan=!!r.titan;
   const gr={};GEARK.forEach(([k])=>{const x=(r.gear&&r.gear[k])||{};gr[k]={g:clamp(Math.round(+x.g||0),0,GR.length-1),w:(k!=='cc'&&k!=='cd')||x.w===''||x.w==null||!isFinite(+x.w)?'':clamp(+x.w,-100,5000),cal:x.cal==null||!isFinite(+x.cal)?null:clamp(Math.round(+x.cal),0,GR.length-1),read:x.read==null||!isFinite(+x.read)?null:+x.read};});r.gear=gr;
   const so={};if(r.slots&&typeof r.slots==='object')for(const n in r.slots){if(!FAM[n])continue;const x=r.slots[n]||{},y={};CATS.forEach(c=>{y[c]=clamp(Math.round(+x[c]||0),0,2);});so[n]=y;}r.slots=so;
+  const fu={};if(r.famUnl&&typeof r.famUnl==='object')for(const n in r.famUnl){if(!FAM[n]||FTREE[n])continue;const x=r.famUnl[n]||{},y={};CATS.forEach(c=>{if(x[c])y[c]=true;});if(Object.keys(y).length)fu[n]=y;}r.famUnl=fu;
   return r;
 }
 function load(){try{const t=localStorage.getItem(KEY)||localStorage.getItem('aotr-build-v1');if(!t)return null;const o=JSON.parse(t);return o&&(o.v===1||o.v===2)?fix(o):null;}catch(e){return null;}}
@@ -988,7 +992,16 @@ function evalBuild(fn,perks,ctx,detail){
 
 /* ================= OPTIMIERER ================= */
 function invCands(){const m={};S.inv.forEach(x=>{if(!m[x.n]||m[x.n].l<x.l)m[x.n]={n:x.n,l:x.l,p:PERK[x.n]};});return Object.values(m);}
-function countsFor(fn){let sl=slotsOf(fn);const tr=CUR.tree.slot;if(FTREE[fn]&&CUR.tree.famFn===fn){const fs=CUR.tree.famSlot||{},o={};CATS.forEach(c=>{o[c]=Math.min(sl[c]||0,fs[c]||0);});sl=o;}return {core:1+(sl.core||0),off:(tr.off?1:0)+(sl.off||0),def:(tr.def?1:0)+(sl.def||0),sup:(tr.sup?1:0)+(sl.sup||0)};}
+// Offene Extra-Slots einer Familie: Fritz über den Familienbaum, sonst per Antippen freigeschaltet
+function famOpen(fn){const sl=slotsOf(fn),o={};
+  if(FTREE[fn]){let fs=null;
+    if(CUR.tree&&CUR.tree.famFn===fn)fs=CUR.tree.famSlot||{};
+    else if(S.tree.mode==='tap'){fs={};((S.tree.famOwn||{})[fn]||[]).forEach(i=>{const nd=FTREE[fn][i];if(nd&&nd.k==='slot')fs[nd.cat]=(fs[nd.cat]||0)+1;});}
+    if(!fs)return Object.assign({},sl);
+    CATS.forEach(c=>{o[c]=Math.min(sl[c]||0,fs[c]||0);});return o;}
+  const u=(S.famUnl||{})[fn]||{};CATS.forEach(c=>{o[c]=u[c]?(sl[c]||0):0;});return o;}
+const famLocked=fn=>{const sl=slotsOf(fn),o=famOpen(fn);return CATS.filter(c=>(sl[c]||0)>(o[c]||0));};
+function countsFor(fn,pot){const sl=pot?slotsOf(fn):famOpen(fn);const tr=CUR.tree.slot;return {core:1+(sl.core||0),off:(tr.off?1:0)+(sl.off||0),def:(tr.def?1:0)+(sl.def||0),sup:(tr.sup?1:0)+(sl.sup||0)};}
 function divOK(cd,c,i,full){if(cd.p.r!=='D')return true;if(c==='core')return cd.p.c==='core';if(i!==0)return false;const tr=CUR.tree||{};return full||(!!(tr.slot&&tr.slot[c])&&!!(tr.cap&&tr.cap[c]));}
 const fits=(cd,c,i,full)=>(c==='core'||cd.p.c===c)&&divOK(cd,c,i==null?0:i,full);
 function selList(sel){const o=[];CATS.forEach(c=>sel[c].forEach(x=>{if(x)o.push(x);}));return o;}
@@ -1027,10 +1040,13 @@ function solve(){
   CUR.eqFn=(S.famLock&&FAM[S.famLock])?S.famLock:((CUR.sol&&CUR.sol.best&&FAM[CUR.sol.best.fn]&&CUR.sol.best.fn)||S.fams.find(n=>FAM[n])||'Reeves');
   const ctx=makeCtx(),cands=invCands();
   let fams=S.fams.filter(n=>FAM[n]);const noFam=!fams.length;if(noFam)fams=['Reeves'];
-  const results=fams.map(fn=>optimizeFam(fn,cands,ctx)).sort((a,b)=>b.power-a.power);
-  const best=(S.famLock&&results.find(r=>r.fn===S.famLock))||results[0];
+  // Familien nach vollem Potenzial vergleichen (alle Familien-Slots frei), Loadout nur mit offenen Slots
+  const same=(a,b)=>CATS.every(c=>a[c]===b[c]);
+  const results=fams.map(fn=>{const cp=countsFor(fn,true),cn=countsFor(fn);const pot=optimizeFam(fn,cands,ctx,{counts:cp});pot.now=same(cp,cn)?pot:optimizeFam(fn,cands,ctx,{counts:cn});return pot;}).sort((a,b)=>b.power-a.power);
+  const pick=(S.famLock&&results.find(r=>r.fn===S.famLock))||results[0];
+  const best=pick.now,potP=pick.power;
   const m=evalBuild(best.fn,selList(best.sel),ctx,true);
-  return {ctx,cands,results,best,m,noFam};
+  return {ctx,cands,results,best,potP,m,noFam};
 }
 
 function analyze(sol){
@@ -1048,7 +1064,7 @@ function analyze(sol){
   // Traden: holen
   const owned=new Set(cands.map(c=>c.n));
   const want=PERKS.filter(p=>!owned.has(p.n)&&p.r!=='D').map(p=>{const r0=tryInsert(fn,sel,{n:p.n,l:0,p},ctx,P0),r10=tryInsert(fn,sel,{n:p.n,l:10,p},ctx,P0);return {p,g0:pct(r0.gain),g10:pct(r10.gain),rep:r10.rep};}).filter(o=>o.g10>1).sort((u,v)=>v.g10-u.g10).slice(0,6);
-  const famWant=FAMS.filter(F=>!S.fams.includes(F.n)&&TS[F.t]>=TS.B).map(F=>{const r=optimizeFam(F.n,cands,ctx,{passes:1});return {F,g:pct(r.power-P0)};}).filter(o=>o.g>1).sort((u,v)=>v.g-u.g).slice(0,4);
+  const famWant=FAMS.filter(F=>!S.fams.includes(F.n)&&TS[F.t]>=TS.B).map(F=>{const r=optimizeFam(F.n,cands,ctx,{passes:1,counts:countsFor(F.n,true)});return {F,g:pct(r.power-sol.potP)};}).filter(o=>o.g>1).sort((u,v)=>v.g-u.g).slice(0,4);
   // Traden: abgeben
   const why=c=>{const p=c.p;
     if(p.s.cc&&p.s.cc[1]>0&&m.ccRaw>=100)return 'Deine Crit-Chance ist schon bei 100 %, mehr bringt nichts.';
@@ -1062,13 +1078,16 @@ function analyze(sol){
   const giveP=useless.filter(o=>o.g10<=-0.05||hard(o.c)).map(o=>({c:o.c,why:why(o.c),loss:pct(o.g10)})).sort((u,v)=>RORD[v.c.p.r]-RORD[u.c.p.r]);
   const cnt={};S.inv.forEach(x=>{(cnt[x.n]=cnt[x.n]||[]).push(x.l);});
   const dups=Object.entries(cnt).filter(([n,ls])=>ls.length>1).map(([n,ls])=>({n,extra:ls.sort((x,y)=>y-x).slice(1)}));
-  const giveF=sol.results.filter(r=>r.fn!==fn&&!sol.noFam).map(r=>{const F=FAM[r.fn];const other=Object.keys(ARCH).filter(k=>k!==a&&ARCH[k].fams.includes(r.fn)).map(k=>ARCH[k].n);return {F,g:pct(r.power-P0),other};});
+  const giveF=sol.results.filter(r=>r.fn!==fn&&!sol.noFam).map(r=>{const F=FAM[r.fn];const other=Object.keys(ARCH).filter(k=>k!==a&&ARCH[k].fams.includes(r.fn)).map(k=>ARCH[k].n);return {F,g:pct(r.power-sol.potP),other};});
   // To-do
   const todo=[];
   if(sol.noFam)todo.push({p:'hi',t:'Familien eintragen',b:'Ohne Familie rechnet der Algo mit einer Common-Familie ohne Boni. Trag alle Familien ein, die du besitzt.'});
   if(!S.inv.length)todo.push({p:'hi',t:'Perks eintragen',b:'Trag deine Perks mit Level ein, dann baut der Algo dein Loadout.'});
   const miss=['off','def','sup'].filter(t=>!CUR.tree.slot[t]);
   if(miss.length)todo.push({p:'hi',t:`${miss.map(t=>CAT[t]).join(', ')}-Slot freischalten`,b:`Jeder Skill-Baum hat einen Perk-Slot-Knoten für 5 SP. Im Tab Skill-Baum antippen, was du schon hast; der Plan holt die Slots zuerst.`});
+  const fl=sol.noFam?[]:famLocked(fn);
+  if(fl.length){const alt=sol.results.filter(r=>r.fn!==fn).map(r=>({fn:r.fn,g:pct(r.now.power-P0)})).sort((u,v)=>v.g-u.g)[0];
+    todo.push({p:'hi',t:`${fn}-Familien-Slots freischalten`,b:(FTREE[fn]?`${fl.map(c=>CAT[c]).join(', ')}: je 7 SP im ${fn}-Familienbaum. Im Tab Skill-Baum antippen, was du schon hast.`:`${fl.map(c=>CAT[c]).join(', ')} im ${fn}-Familienbaum. Bis dahin plant der Rechner nur mit deinen offenen Slots. Schon frei? Auf der Übersicht beim Slot „Ist frei“ antippen.`)+(alt&&alt.g>1?` Solange wäre ${alt.fn} ${fmtGain(alt.g)} stärker.`:'')});}
   const n=memSlots();
   if(n){const wantM=idealMems(fn,n),have=S.mems.slice(0,n);const filled=have.filter(Boolean).length;
     if(filled<n)todo.push({p:'hi',t:'Memory-Slots füllen',b:`${n-filled} von ${n} Slots sind leer. Mit Prestige Scrolls rollen; nach 20 Scrolls ist ein 3★+ garantiert. Ziel: ${wantM.filter(x=>!have.includes(x)).slice(0,3).join(', ')}.`});
@@ -1222,10 +1241,10 @@ function slotTile(c,x,fam){
   if(!x)return `<div class="slot lock"><div class="s-h">${ICON[c]}<span>${CAT[c]}${fam?' · Familie':''}</span></div><div class="s-n">leer</div></div>`;
   return `<div class="slot" style="--rc:var(--r-${x.p.r})" title="${esc(x.p.x)}"><div class="s-h">${ICON[c]}<span>${CAT[c]}${fam?' · Familie':''}</span></div><div class="s-n">${esc(x.n)}${uncM(x.p.u)}</div><div class="s-r"><i class="gem"></i>${RAR[x.p.r]}<b class="num">+${x.l}</b></div>${lvlCtl(invIdx(x.n),x.l,x.n)}<div class="s-e">${esc(perkSummary(x.p,x.l))}</div></div>`;
 }
-const lockTile=(c,txt,fam)=>`<div class="slot lock"><div class="s-h">${ICON[c]}<span>${CAT[c]}${fam?' · Familie':''}</span></div><div class="s-n">gesperrt</div><div class="s-e">${txt}</div></div>`;
+const lockTile=(c,txt,fam,btn)=>`<div class="slot lock"><div class="s-h">${ICON[c]}<span>${CAT[c]}${fam?' · Familie':''}</span></div><div class="s-n">gesperrt</div><div class="s-e">${txt}</div>${btn||''}</div>`;
 function renderResult(){
   const sol=CUR.sol,an=CUR.an,best=sol.best,m=sol.m,f=FAM[best.fn],a=S.arch,A=ARCH[a];
-  const counts=best.counts,fsl=sol.noFam?{}:slotsOf(best.fn);
+  const counts=best.counts,fsl=sol.noFam?{}:famOpen(best.fn);
   // Ziel-Build
   const allC=PERKS.map(p=>({n:p.n,l:10,p}));
   const ideal=optimizeFam(best.fn,allC,sol.ctx,{passes:1,full:true,counts:(sl=>({core:1+(sl.core||0),off:1+(sl.off||0),def:1+(sl.def||0),sup:1+(sl.sup||0)}))(slotsOf(best.fn))});
@@ -1235,7 +1254,7 @@ function renderResult(){
   const tiles=[];
   CATS.forEach(c=>best.sel[c].forEach((x,i)=>{tiles.push(slotTile(c,x,fsl[c]&&i>=counts[c]-fsl[c]));}));
   ['off','def','sup'].forEach(c=>{if(!CUR.tree.slot[c])tiles.push(lockTile(c,'im Skill-Baum freischalten',false));});
-  if(!sol.noFam&&FTREE[best.fn]&&CUR.tree.famFn===best.fn){const fs=CUR.tree.famSlot||{},sl=slotsOf(best.fn);['def','sup'].forEach(c=>{if((sl[c]||0)>(fs[c]||0))tiles.push(lockTile(c,`${esc(best.fn)}-Familienbaum · 7 SP`,true));});}
+  if(!sol.noFam){const sl=slotsOf(best.fn),fn=esc(best.fn);CATS.forEach(c=>{for(let k=fsl[c]||0;k<(sl[c]||0);k++)tiles.push(FTREE[best.fn]?lockTile(c,`${fn}-Familienbaum · 7 SP`,true,'<a class="lnk" href="#baum">Zum Familienbaum</a>'):lockTile(c,`im ${fn}-Familienbaum freischalten`,true,`<button class="lnk" data-act="famUnl" data-f="${fn}" data-c="${c}" data-v="1">Ist frei</button>`));});}
   // Balken
   const bar=(lbl,cur,goal,val,cls)=>`<div class="bar${cls?' '+cls:''}" title="Ziel-Build: ${goal==null?'–':nf0.format(goal)}"><span class="b-l">${lbl}</span><span class="b-t"><i style="width:${goal>0?clamp(cur/goal*100,2,100):0}%"></i></span><span class="b-v num">${val}</span></div>`;
   const avg=(x)=>x.cc*x.cd/100;
@@ -1246,7 +1265,7 @@ function renderResult(){
   // Kopf
   const famOpts=['<option value="">Familie: automatisch</option>'].concat(S.fams.map(n=>`<option value="${esc(n)}"${S.famLock===n?' selected':''}>Familie: ${esc(n)}</option>`)).join('');
   const archOpts=Object.entries(ARCH).map(([k,x])=>`<option value="${k}"${S.arch===k?' selected':''}>${esc(x.n)}${k==='shift'&&!S.titan?' (braucht Titan)':''}</option>`).join('');
-  const alt=sol.results.filter(r=>r.fn!==best.fn).slice(0,2).map(r=>`${esc(r.fn)} <b>${fmtGain(pct(r.power-best.power))}</b>`).join(' · ');
+  const alt=sol.results.filter(r=>r.fn!==best.fn).slice(0,2).map(r=>`${esc(r.fn)} <b>${fmtGain(pct(r.power-sol.potP))}</b>`).join(' · ');
   const vs=(()=>{const eq=eqPerks();if(!eq.length)return '';const me=evalBuild(CUR.eqFn,eq,sol.ctx),g=pct(best.power-me.power);return `<span class="vs${g>0.5?' up':''}" title="Dein Build im Spiel">Im Spiel <b>${nf0.format(me.score)}</b>${g>0.5?` <b class="g">${fmtGain(g)}</b> möglich`:''}</span>`;})();
   $('result').innerHTML=`<section class="card hero">
    <div class="hero-main">
@@ -1547,6 +1566,8 @@ function renderTree(){
     const sk=r.skills.map(n=>barFor(fn).includes(n)?'★ '+n:n).join(', ');
     return `<li class="rd ${r.done?'done':r.part?'part':''}"><span class="rdn">${r.done?'✓':''} ${tr.tap&&r.done?'':(r.from===r.to?r.from:r.from+'–'+r.to)}</span><div><b>${esc(r.title)}</b><p>${[r.slot?(r.slot>1?r.slot+' Perk-Slots':'Perk-Slot'):'',r.cap?'Capstone (Divine-Perks + legendäre Memories)':'',sk?'Skills: '+esc(sk):'',stt].filter(Boolean).join(' · ')}</p></div><span class="rdsp">${r.sp} SP<br><small>${r.done?'gekauft':(tr.tap?'noch '+r.cumEnd:'bis '+r.cumEnd)}</small></span></li>`;}).join('');
   const nxt=tr.plan.map(it=>it.t+':'+it.seg+':'+it.i).filter(id=>tr.afford.has(id)).map(id=>nodeById(id).nd.n);
+  const famCtl=(()=>{if(CUR.sol.noFam||FTREE[fn])return '';const sl=slotsOf(fn),cs=CATS.filter(c=>sl[c]);if(!cs.length)return '';const o=famOpen(fn),f=esc(fn);
+    return `<div class="fslots"><span class="lbl">${f}-Familien-Slots</span>${cs.map(c=>`<div class="seg" role="group" aria-label="${f} ${CAT[c]}-Slot"><span class="segl">${CAT[c]}</span><button data-act="famUnl" data-f="${f}" data-c="${c}" data-v="0" aria-pressed="${!o[c]}">gesperrt</button><button data-act="famUnl" data-f="${f}" data-c="${c}" data-v="1" aria-pressed="${!!o[c]}">frei</button></div>`).join('')}</div>`;})();
   $('view-baum').innerHTML=`
   <section class="card"><div class="tree-top"><div><h2>Skill-Baum</h2><small class="muted">${esc(fn)} · ${esc(A.n)}</small></div>
     <div class="rowgap"><div class="seg" role="group" aria-label="Eingabe"><button data-act="treeMode" data-v="tap" aria-pressed="${tr.tap}">Antippen</button><button data-act="treeMode" data-v="sp" aria-pressed="${!tr.tap}">Nur SP-Zahl</button></div>
@@ -1554,6 +1575,7 @@ function renderTree(){
    <div class="meter"><i style="width:${tr.total?tr.used/tr.total*100:0}%"></i></div>
    ${tr.tap?`<p class="nextup">${nxt.length?`<b>Mit deinen ${tr.free} freien SP jetzt kaufen:</b> ${nxt.map(esc).join(' → ')}`:(tr.rest?`<b>Als Nächstes:</b> ${esc(nodeById(tr.plan.map(it=>it.t+':'+it.seg+':'+it.i).find(id=>!tr.bought.has(id))).nd.n)} (${tr.free?'deine '+tr.free+' SP reichen noch nicht':'trag oben deine freien SP ein'})`:'<b>Baum komplett.</b>')}</p>`:''}
    <div class="kv"><span>${tr.tap?'Gekauft':'Ausgegeben'} <b>${tr.used}${tr.tap?'':' / '+tr.budget} SP</b></span><span>Knoten <b>${tr.nodes}</b></span><span>Gold <b>${nf0.format(tr.nodes*1850)}</b></span><span>Perk-Slots <b>${['off','def','sup'].filter(t=>tr.slot[t]).map(t=>CAT[t]).join(', ')||'keine'}</b></span></div>
+   ${famCtl}
    ${recWhy(fn)?`<p class="help" style="margin-top:8px">${esc(recWhy(fn))}</p>`:''}
    ${offFree.length?`<p class="help" style="margin-top:8px">In ${offFree.map(t=>TREES[t].n).join(', ')} ist noch nicht der Meta-Pfad gewählt.</p>`:''}
    ${offLock.length?`<p class="help" style="margin-top:8px">${offLock.map(t=>`In ${TREES[t].n} hast du den ${TREES[t][S.tree.paths[t]].n}-Pfad, Meta wäre ${TREES[t][rec[t]].n}`).join('. ')}. Umskillen: 1.999 Gems.</p>`:''}</section>
@@ -1609,6 +1631,7 @@ document.addEventListener('click',e=>{
   const mb=$('moreBox');if(mb)UI.moreOpen=mb.open;const sb=$('slotBox');if(sb)UI.slotOpen=sb.open;const gb=$('gearBox');if(gb)UI.gearOpen=gb.open;
   switch(a){
    case 'prestige':S.prestige=+d.v;touch();break;
+   case 'famUnl':{const n=d.f;if(!FAM[n]||FTREE[n]||!CATS.includes(d.c))break;S.famUnl=S.famUnl||{};const u=S.famUnl[n]=S.famUnl[n]||{};if(d.v==='1')u[d.c]=true;else delete u[d.c];if(!Object.keys(u).length)delete S.famUnl[n];touch();break;}
    case 'slotReset':if(S.slots)delete S.slots[d.v];UI.slotOpen=true;touch();break;
    case 'titan':S.titan=d.v==='1';if(!S.titan&&S.arch==='shift'){S.arch='odm';S.tree.paths=recPaths(CUR.sol?CUR.sol.best.fn:'Reeves');}touch();break;
 
