@@ -638,18 +638,24 @@ const MEMS=[
 const MTYPE={core:'Core',off:'Offense',def:'Defense',sup:'Support'};
 
 const ARTS=[
-{n:'Scarf',r:'5★',s:{},x:'Hook-Speed +40 %, Dash-Cooldown −20 %, Rage-Bar-Verbrauch −25 %.'},
-{n:'Cloak',r:'5★',s:{},add:1,x:'Aggro-Range +175 m, +1 maximaler Shift.'},
-{n:'Lantern',r:'4★',s:{dmg:10},x:'Licht um den Spieler, ODM-Schaden +10 %.'},
-{n:'Key',r:'4★',s:{gold:7.5},x:'Gold +7,5 %.'},
-{n:'Scars',r:'–',s:{},x:'Shifter-Artefakt. In Wiki-Builds der Standard-Träger für Substats.'},
-{n:'Colossal Scars',r:'Mythic',s:{},x:'Colossal-Titan-Stats und Shifts (Colossal Raid, Update 4).'},
-{n:'Scorched Cloak',r:'Mythic',s:{},x:'Mehr Brandschaden und Regeneration (Colossal Raid, Update 4).'},
-{n:'Feathered Bicorn',r:'Mythic',s:{},x:'ODM-Stats und Cooldowns (Update 4).',u:'Genaue Werte unbekannt.'},
-{n:'Hoodie',r:'–',s:{},x:'In Wiki-Builds als Substat-Träger genutzt.'},
-{n:'Rifle',r:'–',s:{},x:'In Wiki-Builds als Substat-Träger genutzt.'},
+{n:'Scarf',r:'Mythic',s:{},x:'Hals/Umhang (Attack-Raid): Hook-Speed +40 %, Dash-Cooldown −20 %, Rage-Bar-Verbrauch −25 %.'},
+{n:'Hoodie',r:'Legendary',s:{spd:15,dmg:10},x:'Hals/Umhang (Female-Raid): ODM/TS-Speed +15 %, Schaden +10 %.'},
+{n:'Lantern',r:'Epic',s:{dmg:10},x:'Hals/Umhang (Attack-Raid): Licht um den Spieler, ODM-Schaden +10 %.'},
+{n:'Crystal Necklace',r:'Mythic',s:{cd:5},x:'Hals/Umhang (Female-Raid): +10 % Schaden, +10 % Punch-Tempo, +5 % Crit-Schaden.',u:'Ob die +10 % Schaden auch mit ODM gelten, ist unklar; eingerechnet ist nur der Crit-Schaden.'},
+{n:"Warrior's Armband",r:'Mythic',s:{dr:15,hp:50},x:'Armored-Raid: Schadensreduktion +15 %, Resistenz +5 %, +50 HP.'},
+{n:'Rifle',r:'Legendary',s:{cdr:10},x:'Hals/Umhang (Armored-Raid): +1 Nachfüllen an der Supply-Station, Skill-Cooldowns −10 %.'},
+{n:'Cloak',r:'Legendary',s:{},add:1,x:'Hals/Umhang (Attack-Raid): Aggro-Range +175 m, +1 maximaler Shift.'},
+{n:'Key',r:'Epic',s:{gold:7.5},x:'Hals/Umhang (Attack-Raid): Gold +7,5 %.'},
+{n:'Scars',r:'Mythic',s:{titan:15},add:1,x:'Kopf/Gesicht (Armored- und Female-Raid): Shifter-Stats +15 %, +1 Shift, Awakening-Bar leert sich 20 % langsamer. Ohne Shiften nur als Träger für Substats nützlich.'},
+{n:'Attack Scars',r:'Mythic',s:{},x:'Kopf/Gesicht (Attack-Raid): Scars-Variante mit Shifter-Werten. Ohne Shiften nur als Träger für Substats nützlich; im Handel die günstigste Scars.',u:'Genaue Werte unbekannt.'},
+{n:'Armored Scars',r:'Mythic',s:{},x:'Kopf/Gesicht (Armored-Raid): Scars-Variante mit stärkerer Shifter-Skalierung.',u:'Genaue Werte unbekannt.'},
+{n:'Female Scars',r:'Mythic',s:{},x:'Kopf/Gesicht (Female-Raid): Scars-Variante mit Shifter-Werten.',u:'Genaue Werte unbekannt.'},
+{n:'Colossal Scars',r:'Mythic',s:{},x:'Kopf/Gesicht (Colossal-Raid): Colossal-Titan-Stats und Shifts.',u:'Genaue Werte unbekannt.'},
+{n:'Scorched Cloak',r:'Mythic',s:{burn:5,regenFlat:5},x:'Hals/Umhang (Colossal-Raid): Brandschaden +5 % und ×1,1, HP-Regen +5.'},
+{n:'Feathered Bicorn',r:'Legendary',s:{},x:'Kopf (Waves-Modus): ODM-Stats und Cooldowns.',u:'Genaue Werte unbekannt.'},
+{n:'Crown',r:'Legendary',s:{luck:7.5},x:'Kopf/Gesicht (Achievements): Luck +7,5 %.'},
 {n:'Onyx Sheath',r:'–',s:{},x:'Achievement „Razor Edge“ (10.000.000 Gesamtschaden).'},
-{n:'Journal',r:'3★',s:{},x:'Werte unbekannt.'},
+{n:'Journal',r:'Rare',s:{},x:'Hals/Umhang (Attack-Raid): keine Boni.'},
 {n:'Anderes Artefakt',r:'–',s:{},x:'Nur die Substats zählen.'}
 ];
 const SUBK=['dmg','spd','ctl','gas','rng','cc','cd','cdr','cons','shDmg','hpPct','dr','luck','gold','xp'];
