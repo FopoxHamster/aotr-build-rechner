@@ -665,9 +665,9 @@ const PRE=[
 {p:0,rank:'Ohne Prestige',need:null,xp:null,cap:100,mem:0,conv:null},
 {p:1,rank:'Private',need:100,xp:1952500,cap:125,mem:1,conv:1500},
 {p:2,rank:'Corporal',need:125,xp:3429553,cap:150,mem:2,conv:1250},
-{p:3,rank:'Sergeant',need:150,xp:5265320,cap:175,mem:4,conv:1000},
-{p:4,rank:'–',need:175,xp:7334070,cap:200,mem:5,conv:1000},
-{p:5,rank:'Captain',need:200,xp:11673242,cap:225,mem:7,conv:1000}
+{p:3,rank:'Sergeant',need:150,xp:5265320,cap:175,mem:3,conv:1000},
+{p:4,rank:'–',need:175,xp:7334070,cap:200,mem:4,conv:1000},
+{p:5,rank:'Captain',need:200,xp:11673242,cap:225,mem:5,conv:1000}
 ];
 
 const N=(n,sp,s,k,x)=>({n,sp,s:s||null,k:k||'stat',x:x||''});
@@ -1606,7 +1606,7 @@ function renderPrestige(){
      <label class="fld"><span class="lbl">EXP pro Stunde</span><input id="xph" type="number" min="0" step="1000" value="${S.xph}" data-ch="xph" style="width:9em"></label></div>
      <div class="meter"><i style="width:${pc}%"></i></div>
      <div class="kv"><span>Noch <b>${nf0.format(left)} EXP</b></span><span>Zeit <b>${S.xph>0?nf1.format(h)+' h':'–'}</b></span><span>Fortschritt <b>${nf0.format(pc)} %</b></span></div></section>`;}
-  else calc='<section class="card"><h2>Maximales Prestige erreicht</h2><p class="help" style="margin-top:6px">Captain (★5): 7 Memory-Slots, Level-Cap 225. Jetzt zählen nur noch Perk-Level, Memories und Artefakt-Substats.</p></section>';
+  else calc='<section class="card"><h2>Maximales Prestige erreicht</h2><p class="help" style="margin-top:6px">Captain (★5): 5 Memory-Slots, Level-Cap 225. Jetzt zählen nur noch Perk-Level, Memories und Artefakt-Substats.</p></section>';
   const tal=S.talents.slice(0,p).filter(Boolean),cntT=k=>tal.filter(x=>x===k).length;
   $('view-prestige').innerHTML=`<div class="two">
    <div class="col"><section class="card"><div class="card-h"><h2>Prestige-Stufen</h2><small>du: ★${p}</small></div>
